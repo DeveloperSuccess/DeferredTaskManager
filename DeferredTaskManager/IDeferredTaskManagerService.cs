@@ -1,4 +1,4 @@
-﻿namespace DeferringTasksManager
+﻿namespace DeferredTaskManager
 {
     public interface IDeferredTaskManagerService<T>
     {

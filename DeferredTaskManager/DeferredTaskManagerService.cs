@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace DeferringTasksManager
+namespace DeferredTaskManager
 {
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
