@@ -7,13 +7,11 @@ namespace DeferringTasksManager
         private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         private readonly object _lockSubscribers = new object();
         private readonly ReaderWriterLockSlim _lockBag = new();
-        private readonly int _taskPoolSize;
         private readonly PubSub _pubSub = new PubSub();
         private Func<IEnumerable<T>, CancellationToken, Task> _taskFactory;
 
-        public DeferredTaskManagerService(int taskPoolSize = 1000)
+        public DeferredTaskManagerService()
         {
-            _taskPoolSize = taskPoolSize;
         }
 
         public void Add(T @event)
@@ -75,13 +73,13 @@ namespace DeferringTasksManager
             return result;
         }
 
-        public Task StartAsync(Func<IEnumerable<T>, CancellationToken, Task> taskFactory, CancellationToken cancellationToken)
+        public Task StartAsync(Func<IEnumerable<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, CancellationToken cancellationToken = default)
         {
             _taskFactory = taskFactory;
 
             var taskPool = new List<Task>();
 
-            for (int i = 0; i < _taskPoolSize; i++)
+            for (int i = 0; i < taskPoolSize; i++)
             {
                 taskPool.Add(SenderAsync(cancellationToken));
             }
