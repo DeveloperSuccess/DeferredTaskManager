@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<BaseVersion>2.0.1</BaseVersion>
+	<VersionPrefix>$(BaseVersion)</VersionPrefix>
+	<RepositoryUrl>https://github.com/DeveloperSuccess/DeferredTaskManager</RepositoryUrl>
+	<Authors>Arthur Bogdanov</Authors>
+	<Copyright>©Copyright 2024 Arthur Bogdanov. All rights reserved.</Copyright>
+	<Tags>task, threading, thread, async, await, multitasking, deferred, runner, runners, queue, pool, background, multiple</Tags>
+	<Description>The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue. Classic runners usually do not wait, but constantly check the queue for tasks. The current implementation uses the PubSub pattern to wait for new tasks, which makes this approach more reactive but less resource-intensive.</Description>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>
