@@ -12,7 +12,7 @@ namespace DeferredTaskManager
         public int TaskCount => _bag.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;
 
-        private Func<IEnumerable<T>, CancellationToken, Task> _taskFactory;
+        private Func<List<T>, CancellationToken, Task> _taskFactory;
         private int _retry;
         int _millisecondsRetryDelay;
 
@@ -87,7 +87,7 @@ namespace DeferredTaskManager
             return result;
         }
 
-        public Task StartAsync(Func<IEnumerable<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
+        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
         {
             _taskFactory = taskFactory;
 
