@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<BaseVersion>8.0.1</BaseVersion>
+	<BaseVersion>8.0.2</BaseVersion>
 	<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	<RepositoryUrl>https://github.com/DeveloperSuccess/DeferredTaskManager</RepositoryUrl>
 	<Authors>Arthur Bogdanov</Authors>
