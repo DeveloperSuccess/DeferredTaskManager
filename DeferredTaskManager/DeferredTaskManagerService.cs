@@ -5,7 +5,6 @@ namespace DeferredTaskManager
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
-        private readonly object _lockSubscribers = new object();
         private readonly ReaderWriterLockSlim _lockBag = new();
         private readonly PubSub _pubSub = new PubSub();
 
@@ -34,10 +33,7 @@ namespace DeferredTaskManager
                 _lockBag.ExitReadLock();
             }
 
-            lock (_lockSubscribers)
-            {
-                _pubSub.SendEvents();
-            }
+            _pubSub.SendEvents();
         }
 
         public void Add(IEnumerable<T> events)
@@ -54,10 +50,7 @@ namespace DeferredTaskManager
                 _lockBag.ExitReadLock();
             }
 
-            lock (_lockSubscribers)
-            {
-                _pubSub.SendEvents();
-            }
+            _pubSub.SendEvents();
         }
 
         private List<T> GetAndClearBag()
@@ -117,10 +110,7 @@ namespace DeferredTaskManager
                 }
                 else
                 {
-                    lock (_lockSubscribers)
-                    {
-                        _pubSub.Unsubscribe(subscriberKey);
-                    }
+                    _pubSub.Unsubscribe(subscriberKey);
                 }
 
                 var events = GetAndClearBag();

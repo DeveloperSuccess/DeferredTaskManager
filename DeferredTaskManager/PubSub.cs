@@ -5,19 +5,27 @@ namespace DeferredTaskManager
     internal class PubSub
     {
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<bool>> _subscribers = new ConcurrentDictionary<Guid, TaskCompletionSource<bool>>();
+        private readonly object _lockSubscribers = new object();
 
         public int SubscribersCount => _subscribers.Count;
 
         public void SendEvents()
         {
-            var subscriber = _subscribers.FirstOrDefault();
+            var task = new TaskCompletionSource<bool>();
 
-            if (subscriber.Key != Guid.Empty)
+            lock (_lockSubscribers)
             {
-                subscriber.Value.TrySetResult(true);
+                var subscriber = _subscribers.FirstOrDefault();
 
-                Unsubscribe(subscriber.Key);
+                if (subscriber.Key != Guid.Empty)
+                {
+                    Unsubscribe(subscriber.Key);
+                }
+
+                task = subscriber.Value;
             }
+
+            task?.TrySetResult(true);
         }
 
         public void Subscribe(out Guid subscriberKey, out Task<bool> task)
@@ -33,7 +41,10 @@ namespace DeferredTaskManager
 
         public void Unsubscribe(Guid subscriberKey)
         {
-            _subscribers.TryRemove(subscriberKey, out var subscriber);
+            lock (_lockSubscribers)
+            {
+                _subscribers.TryRemove(subscriberKey, out var subscriber);
+            }
         }
     }
 }
