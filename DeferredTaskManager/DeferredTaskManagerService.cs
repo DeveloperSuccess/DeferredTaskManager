@@ -57,24 +57,17 @@ namespace DeferredTaskManager
         {
             List<T> result;
 
+            _lockBag.EnterWriteLock();
+
             try
             {
-                _lockBag.EnterWriteLock();
+                result = _bag.ToList();
 
-                try
-                {
-                    result = _bag.ToList();
-
-                    _bag.Clear();
-                }
-                finally
-                {
-                    _lockBag.ExitWriteLock();
-                }
+                _bag.Clear();
             }
-            catch (Exception ex)
+            finally
             {
-                throw new Exception(ex.Message, ex);
+                _lockBag.ExitWriteLock();
             }
 
             return result;
