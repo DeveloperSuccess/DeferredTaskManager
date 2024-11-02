@@ -99,7 +99,16 @@ namespace DeferredTaskManager
 
                 if (_bag.IsEmpty)
                 {
-                    var access = await task.WaitAsync(cancellationToken);
+                    try
+                    {
+                        await task.WaitAsync(cancellationToken);
+                    }
+                    catch
+                    {
+                        _pubSub.Unsubscribe(subscriberKey);
+
+                        continue;
+                    }
                 }
                 else
                 {
