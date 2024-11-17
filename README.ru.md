@@ -1,3 +1,5 @@
+[English](./README.md)
+
 # Deferred Task Manager C# на основе паттерна Runners
 
 [![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
