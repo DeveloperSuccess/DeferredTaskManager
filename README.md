@@ -1,5 +1,5 @@
-[Русский](./README.md)
- | [English](./README.ru.md)
+[Русский](./README.ru.md)
+ | [English](./README.md)
 
 # Deferred Task Manager C# based on the Runners pattern
 
