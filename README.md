@@ -1,4 +1,4 @@
-[![ru]([https://img.shields.io/badge/lang-ru-green.svg](https://img.shields.io/badge/lang-es-yellow.svg))](./README.ru.md)
+[![ru](https://img.shields.io/badge/lang-ru-green.svg)](./README.ru.md)
 
 # Deferred Task Manager C# based on the Runners pattern
 
