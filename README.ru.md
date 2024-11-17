@@ -1,4 +1,4 @@
-[English](./README.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
 
 # Deferred Task Manager C# на основе паттерна Runners
 
