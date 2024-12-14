@@ -61,7 +61,7 @@ namespace DeferredTaskManager
 
             try
             {
-                result = _bag.ToList();
+                result = _bag.Reverse().ToList();
 
                 _bag.Clear();
             }
