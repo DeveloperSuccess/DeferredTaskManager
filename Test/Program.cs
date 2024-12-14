@@ -52,7 +52,7 @@ void Add()
 {
     for (int i = 0; i < _itemCount; i++)
     {
-        _manager.Add(Guid.NewGuid().ToString() + "Ахуенно Ахуенно Ахуенно gwgrge ehehehe erherhrehreh erhrehrehrhreherhrehrehre rehrehrehreh erhrehreherherhrehreh erhreherhrehrehre");
+        _manager.Add(Guid.NewGuid().ToString() + "The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue.");
     }
 }
 
