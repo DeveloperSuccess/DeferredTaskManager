@@ -2,7 +2,7 @@
 
 namespace DeferredTaskManager.CollectionStrategy
 {
-    public interface ICollectionStrategy<T>
+    internal interface ICollectionStrategy<T>
     {
         void Add(T item);
         IEnumerable<T> GetItems();

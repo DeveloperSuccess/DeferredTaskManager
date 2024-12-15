@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DeferredTaskManager.CollectionStrategy
 {
-    public class QueueStrategy<T> : ICollectionStrategy<T>
+    internal class QueueStrategy<T> : ICollectionStrategy<T>
     {
         private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
         public void Add(T item) => _queue.Enqueue(item);

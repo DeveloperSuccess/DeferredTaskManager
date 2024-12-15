@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace DeferredTaskManager.Extensions
 {
-    public static class TaskTimeoutExtensions
+    internal static class TaskTimeoutExtensions
     {
         #region WaitAsync polyfills
         // Test polyfills when targeting a platform that doesn't have these ConfigureAwait overloads on Task
 
-        public static Task WaitAsync(this Task task, int millisecondsTimeout) =>
+        internal static Task WaitAsync(this Task task, int millisecondsTimeout) =>
             task.WaitAsync(TimeSpan.FromMilliseconds(millisecondsTimeout), default);
 
-        public static Task WaitAsync(this Task task, TimeSpan timeout) =>
+        internal static Task WaitAsync(this Task task, TimeSpan timeout) =>
             task.WaitAsync(timeout, default);
 
-        public static Task WaitAsync(this Task task, CancellationToken cancellationToken) =>
+        internal static Task WaitAsync(this Task task, CancellationToken cancellationToken) =>
             task.WaitAsync(Timeout.InfiniteTimeSpan, cancellationToken);
 
-        public async static Task WaitAsync(this Task task, TimeSpan timeout, CancellationToken cancellationToken)
+        internal async static Task WaitAsync(this Task task, TimeSpan timeout, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<bool>();
             using (new Timer(s => ((TaskCompletionSource<bool>)s).TrySetException(new TimeoutException()), tcs, timeout, Timeout.InfiniteTimeSpan))
@@ -30,16 +30,16 @@ namespace DeferredTaskManager.Extensions
             }
         }
 
-        public static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, int millisecondsTimeout) =>
+        internal static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, int millisecondsTimeout) =>
             task.WaitAsync(TimeSpan.FromMilliseconds(millisecondsTimeout), default);
 
-        public static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, TimeSpan timeout) =>
+        internal static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, TimeSpan timeout) =>
             task.WaitAsync(timeout, default);
 
-        public static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, CancellationToken cancellationToken) =>
+        internal static Task<TResult> WaitAsync<TResult>(this Task<TResult> task, CancellationToken cancellationToken) =>
             task.WaitAsync(Timeout.InfiniteTimeSpan, cancellationToken);
 
-        public static async Task<TResult> WaitAsync<TResult>(this Task<TResult> task, TimeSpan timeout, CancellationToken cancellationToken)
+        internal static async Task<TResult> WaitAsync<TResult>(this Task<TResult> task, TimeSpan timeout, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<TResult>();
             using (new Timer(s => ((TaskCompletionSource<TResult>)s).TrySetException(new TimeoutException()), tcs, timeout, Timeout.InfiniteTimeSpan))
@@ -50,13 +50,13 @@ namespace DeferredTaskManager.Extensions
         }
         #endregion
 
-        public static async Task WhenAllOrAnyFailed(this Task[] tasks, int millisecondsTimeout) =>
+        internal static async Task WhenAllOrAnyFailed(this Task[] tasks, int millisecondsTimeout) =>
             await tasks.WhenAllOrAnyFailed().WaitAsync(TimeSpan.FromMilliseconds(millisecondsTimeout));
 
-        public static async Task WhenAllOrAnyFailed(Task t1, Task t2, int millisecondsTimeout) =>
+        internal static async Task WhenAllOrAnyFailed(Task t1, Task t2, int millisecondsTimeout) =>
             await new Task[] { t1, t2 }.WhenAllOrAnyFailed(millisecondsTimeout);
 
-        public static async Task WhenAllOrAnyFailed(this Task[] tasks)
+        internal static async Task WhenAllOrAnyFailed(this Task[] tasks)
         {
             try
             {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DeferredTaskManager.CollectionStrategy
 {
-    public class BagStrategy<T> : ICollectionStrategy<T>
+    internal class BagStrategy<T> : ICollectionStrategy<T>
     {
         private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         public void Add(T item) => _bag.Add(item);

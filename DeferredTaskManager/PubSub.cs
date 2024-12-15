@@ -11,9 +11,9 @@ namespace DeferredTaskManager
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<bool>> _subscribers = new ConcurrentDictionary<Guid, TaskCompletionSource<bool>>();
         private readonly object _lockSubscribers = new object();
 
-        public int SubscribersCount => _subscribers.Count;
+        internal int SubscribersCount => _subscribers.Count;
 
-        public void SendEvents()
+        internal void SendEvents()
         {
             var task = new TaskCompletionSource<bool>();
 
@@ -32,7 +32,7 @@ namespace DeferredTaskManager
             task?.TrySetResult(true);
         }
 
-        public void Subscribe(out Guid subscriberKey, out Task<bool> task)
+        internal void Subscribe(out Guid subscriberKey, out Task<bool> task)
         {
             subscriberKey = Guid.NewGuid();
 
@@ -43,7 +43,7 @@ namespace DeferredTaskManager
             task = taskCompletionSource.Task;
         }
 
-        public void Unsubscribe(Guid subscriberKey)
+        internal void Unsubscribe(Guid subscriberKey)
         {
             lock (_lockSubscribers)
             {

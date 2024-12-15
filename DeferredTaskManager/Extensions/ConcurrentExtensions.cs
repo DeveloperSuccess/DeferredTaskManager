@@ -2,9 +2,9 @@
 
 namespace DeferredTaskManager.Extensions
 {
-    public static class ConcurrentExtensions
+    internal static class ConcurrentExtensions
     {
-        public static void AddOrUpdate<K, V>(this ConcurrentDictionary<K, V> dictionary, K key, V value)
+        internal static void AddOrUpdate<K, V>(this ConcurrentDictionary<K, V> dictionary, K key, V value)
         {
             dictionary.AddOrUpdate(key, value, (oldkey, oldvalue) => value);
         }
