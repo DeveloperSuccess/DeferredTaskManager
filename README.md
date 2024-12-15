@@ -39,7 +39,7 @@ internal sealed class EventManagerService : BackgroundService
 }
 ```
 
-A delegate with your logic must be passed to the launch method. The size of the runners pool and the parameters for resending in case of errors are variable.
+A delegate with your logic must be passed to the launch method. The size of the runners pool and the parameters for resending in case of errors are variable. You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
 
 3️⃣ Sending data to the Deferred Task Manager for subsequent execution:
 
