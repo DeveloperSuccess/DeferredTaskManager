@@ -1,4 +1,4 @@
-﻿namespace DeferredTaskManager
+﻿namespace DeferredTaskManager.Enum
 {
     public enum CollectionType
     {

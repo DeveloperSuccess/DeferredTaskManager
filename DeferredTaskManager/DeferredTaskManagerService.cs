@@ -1,12 +1,19 @@
 ﻿using DeferredTaskManager.CollectionStrategy;
+using DeferredTaskManager.Enum;
+using DeferredTaskManager.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DeferredTaskManager
 {
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
-        private readonly ReaderWriterLockSlim _lockBag = new();
-        private readonly object _locksIsStarted = new();
-        private readonly PubSub _pubSub = new();
+        private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
+        private readonly object _locksIsStarted = new object();
+        private readonly PubSub _pubSub = new PubSub();
 
         public int TaskCount => _collectionStrategy.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;

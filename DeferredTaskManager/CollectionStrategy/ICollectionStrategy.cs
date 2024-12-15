@@ -1,4 +1,6 @@
-﻿namespace DeferredTaskManager.CollectionStrategy
+﻿using System.Collections.Generic;
+
+namespace DeferredTaskManager.CollectionStrategy
 {
     public interface ICollectionStrategy<T>
     {
