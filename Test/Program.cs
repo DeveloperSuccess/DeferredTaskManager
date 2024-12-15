@@ -52,7 +52,7 @@ void Add()
 {
     for (int i = 0; i < _itemCount; i++)
     {
-        _manager.Add(Guid.NewGuid().ToString() + "The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue.");
+        _manager.Add(Guid.NewGuid().ToString() + " The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue.");
     }
 }
 
@@ -80,7 +80,13 @@ Task ExecuteAsync(CancellationToken cancellationToken)
         }
     };
 
-    return Task.Run(() => _manager.StartAsync(taskDelegate, taskPoolSize: 1, retry: 3, retryDelayMilliseconds: 1000, cancellationToken: cancellationToken));
+    return Task.Run(() => _manager.StartAsync(
+        taskFactory: taskDelegate,
+        taskPoolSize: 1,
+        collectionType: CollectionType.Bag,
+        retry: 3,
+        millisecondsRetryDelay: 1000,
+        cancellationToken: cancellationToken));
 }
 
 async Task CountingTotalExecutionTime()

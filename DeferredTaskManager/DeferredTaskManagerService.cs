@@ -1,24 +1,35 @@
-﻿using System.Collections.Concurrent;
+﻿using DeferredTaskManager.CollectionStrategy;
 
 namespace DeferredTaskManager
 {
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
-        private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         private readonly ReaderWriterLockSlim _lockBag = new();
-        private readonly PubSub _pubSub = new PubSub();
+        private readonly object _locksIsStarted = new();
+        private readonly PubSub _pubSub = new();
 
-        public int TaskCount => _bag.Count;
+        public int TaskCount => _collectionStrategy.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;
 
-        private Func<List<T>, CancellationToken, Task> _taskFactory;
+        private ICollectionStrategy<T> _collectionStrategy = default!;
+        private Func<List<T>, CancellationToken, Task> _taskFactory = default!;
         private int _retry;
-        int _millisecondsRetryDelay;
+        private int _millisecondsRetryDelay;
+        private bool _isStarted = false;
 
         public DeferredTaskManagerService()
         {
-
         }
+
+        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory,
+            int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue,
+            int retry = 0, int millisecondsRetryDelay = 100,
+            CancellationToken cancellationToken = default)
+            => Execute(taskFactory, taskPoolSize, retry, millisecondsRetryDelay, collectionType, cancellationToken);
+
+        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory,
+            int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
+            => Execute(taskFactory, taskPoolSize, retry, millisecondsRetryDelay, CollectionType.Queue, cancellationToken);
 
         public void Add(T @event)
         {
@@ -26,7 +37,7 @@ namespace DeferredTaskManager
 
             try
             {
-                _bag.Add(@event);
+                _collectionStrategy.Add(@event);
             }
             finally
             {
@@ -43,7 +54,7 @@ namespace DeferredTaskManager
             try
             {
                 foreach (var ev in events)
-                    _bag.Add(ev);
+                    _collectionStrategy.Add(ev);
             }
             finally
             {
@@ -61,9 +72,9 @@ namespace DeferredTaskManager
 
             try
             {
-                result = _bag.Reverse().ToList();
+                result = _collectionStrategy.GetItems().ToList();
 
-                _bag.Clear();
+                _collectionStrategy.Clear();
             }
             finally
             {
@@ -73,9 +84,22 @@ namespace DeferredTaskManager
             return result;
         }
 
-        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
+        private Task Execute(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CollectionType collectionType = CollectionType.Queue, CancellationToken cancellationToken = default)
         {
-            _taskFactory = taskFactory;
+            lock (_locksIsStarted)
+            {
+                if (_isStarted) return Task.CompletedTask;
+                _isStarted = true;
+            }
+
+            _taskFactory = taskFactory ?? throw new ArgumentNullException(nameof(taskFactory));
+
+            _collectionStrategy = collectionType switch
+            {
+                CollectionType.Bag => new BagStrategy<T>(),
+                CollectionType.Queue => new QueueStrategy<T>(),
+                _ => throw new ArgumentException("Unacceptable collection type"),
+            };
 
             _retry = retry;
 
@@ -97,7 +121,7 @@ namespace DeferredTaskManager
             {
                 _pubSub.Subscribe(out Guid subscriberKey, out Task<bool> task);
 
-                if (_bag.IsEmpty)
+                if (_collectionStrategy.IsEmpty)
                 {
                     try
                     {
