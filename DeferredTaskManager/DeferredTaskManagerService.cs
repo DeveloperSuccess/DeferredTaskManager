@@ -91,11 +91,11 @@ namespace DeferredTaskManager
             return result;
         }
 
-        private Task Execute(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CollectionType collectionType = CollectionType.Queue, CancellationToken cancellationToken = default)
+        private async Task Execute(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CollectionType collectionType = CollectionType.Queue, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
-                if (_isStarted) return Task.CompletedTask;
+                if (_isStarted) return;
                 _isStarted = true;
             }
 
@@ -119,7 +119,7 @@ namespace DeferredTaskManager
                 taskPool.Add(SenderAsync(cancellationToken));
             }
 
-            return Task.WhenAll(taskPool);
+            await Task.WhenAll(taskPool).ConfigureAwait(false);
         }
 
         private async Task SenderAsync(CancellationToken cancellationToken)
@@ -132,7 +132,7 @@ namespace DeferredTaskManager
                 {
                     try
                     {
-                        await task.WaitAsync(cancellationToken);
+                        await task.WaitAsync(cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -150,7 +150,7 @@ namespace DeferredTaskManager
 
                 if (events.Count == 0) continue;
 
-                await SendEventsAsync(events, _retry, cancellationToken);
+                await SendEventsAsync(events, _retry, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -158,15 +158,15 @@ namespace DeferredTaskManager
         {
             try
             {
-                await _taskFactory(events, cancellationToken);
+                await _taskFactory(events, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 if (retry == 0) return;
 
-                await Task.Delay(_millisecondsRetryDelay, cancellationToken);
+                await Task.Delay(_millisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
-                await SendEventsAsync(events, retry - 1, cancellationToken);
+                await SendEventsAsync(events, retry - 1, cancellationToken).ConfigureAwait(false);
             }
         }
     }
