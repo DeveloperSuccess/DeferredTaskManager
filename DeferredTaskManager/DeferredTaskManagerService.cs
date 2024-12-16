@@ -1,13 +1,13 @@
-﻿using DeferredTaskManager.CollectionStrategy;
-using DeferredTaskManager.Enum;
-using DeferredTaskManager.Extensions;
+﻿using DTM.CollectionStrategy;
+using DTM.Enum;
+using DTM.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DeferredTaskManager
+namespace DTM
 {
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
@@ -27,16 +27,6 @@ namespace DeferredTaskManager
         public DeferredTaskManagerService()
         {
         }
-
-        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory,
-            int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue,
-            int retry = 0, int millisecondsRetryDelay = 100,
-            CancellationToken cancellationToken = default)
-            => Execute(taskFactory, taskPoolSize, retry, millisecondsRetryDelay, collectionType, cancellationToken);
-
-        public Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory,
-            int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
-            => Execute(taskFactory, taskPoolSize, retry, millisecondsRetryDelay, CollectionType.Queue, cancellationToken);
 
         public void Add(T @event)
         {
@@ -71,27 +61,7 @@ namespace DeferredTaskManager
             _pubSub.SendEvents();
         }
 
-        private List<T> GetAndClearBag()
-        {
-            List<T> result;
-
-            _lockBag.EnterWriteLock();
-
-            try
-            {
-                result = _collectionStrategy.GetItems().ToList();
-
-                _collectionStrategy.Clear();
-            }
-            finally
-            {
-                _lockBag.ExitWriteLock();
-            }
-
-            return result;
-        }
-
-        private async Task Execute(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, int retry = 0, int millisecondsRetryDelay = 100, CollectionType collectionType = CollectionType.Queue, CancellationToken cancellationToken = default)
+        public async Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
@@ -152,6 +122,26 @@ namespace DeferredTaskManager
 
                 await SendEventsAsync(events, _retry, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private List<T> GetAndClearBag()
+        {
+            List<T> result;
+
+            _lockBag.EnterWriteLock();
+
+            try
+            {
+                result = _collectionStrategy.GetItems().ToList();
+
+                _collectionStrategy.Clear();
+            }
+            finally
+            {
+                _lockBag.ExitWriteLock();
+            }
+
+            return result;
         }
 
         private async Task SendEventsAsync(List<T> events, int retry, CancellationToken cancellationToken)

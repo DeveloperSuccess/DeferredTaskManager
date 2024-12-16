@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DeferredTaskManager.Extensions
+namespace DTM.Extensions
 {
     internal static class TaskTimeoutExtensions
     {

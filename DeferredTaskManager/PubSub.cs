@@ -1,10 +1,10 @@
-﻿using DeferredTaskManager.Extensions;
+﻿using DTM.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeferredTaskManager
+namespace DTM
 {
     internal class PubSub
     {

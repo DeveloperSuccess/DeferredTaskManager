@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DeferredTaskManager.CollectionStrategy
+namespace DTM.CollectionStrategy
 {
     internal interface ICollectionStrategy<T>
     {

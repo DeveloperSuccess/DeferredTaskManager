@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DeferredTaskManager.CollectionStrategy
+namespace DTM.CollectionStrategy
 {
     internal class BagStrategy<T> : ICollectionStrategy<T>
     {

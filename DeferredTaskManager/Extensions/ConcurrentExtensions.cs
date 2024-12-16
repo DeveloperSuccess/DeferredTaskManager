@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace DeferredTaskManager.Extensions
+namespace DTM.Extensions
 {
     internal static class ConcurrentExtensions
     {
