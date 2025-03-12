@@ -20,6 +20,7 @@ namespace DTM
 
         private ICollectionStrategy<T> _collectionStrategy = default!;
         private Func<List<T>, CancellationToken, Task> _taskFactory = default!;
+        private Func<List<T>, CancellationToken, Task>? _taskFactoryRetryExhausted = null;
         private int _retry;
         private int _millisecondsRetryDelay;
         private bool _isStarted = false;
@@ -61,7 +62,7 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
-        public async Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue, int retry = 0, int millisecondsRetryDelay = 100, CancellationToken cancellationToken = default)
+        public async Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue, int retry = 0, int millisecondsRetryDelay = 100, Func<List<T>, CancellationToken, Task>? taskFactoryRetryExhausted = null, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
@@ -70,6 +71,8 @@ namespace DTM
             }
 
             _taskFactory = taskFactory ?? throw new ArgumentNullException(nameof(taskFactory));
+
+            _taskFactoryRetryExhausted = taskFactoryRetryExhausted;
 
             _collectionStrategy = collectionType switch
             {
@@ -152,7 +155,15 @@ namespace DTM
             }
             catch
             {
-                if (retry == 0) return;
+                if (retry == 0)
+                {
+                    if (_taskFactoryRetryExhausted != null)
+                    {
+                        await _taskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return;
+                }
 
                 await Task.Delay(_millisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
