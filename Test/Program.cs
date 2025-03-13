@@ -19,7 +19,7 @@ ExecuteAsync(default);
 
 await AddAsync();
 
-await CountingTotalExecutionTime();
+CountingTotalExecutionTime();
 
 stopwatch.Stop();
 
@@ -81,16 +81,22 @@ Task ExecuteAsync(CancellationToken cancellationToken)
         }
     };
 
+    Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+    {
+        Console.WriteLine("Что-то пошло не так...");
+    };
+
     return Task.Run(() => _manager.StartAsync(
         taskFactory: taskDelegate,
         taskPoolSize: 1,
         collectionType: CollectionType.Bag,
         retry: 3,
         millisecondsRetryDelay: 1000,
-        cancellationToken: cancellationToken));
+        taskFactoryRetryExhausted: taskDelegateRetryExhausted,
+        cancellationToken: cancellationToken), cancellationToken);
 }
 
-async Task CountingTotalExecutionTime()
+void CountingTotalExecutionTime()
 {
     while (_numberCompletedEvents.Sum() < _threadCount * _itemCount) ;
 }
