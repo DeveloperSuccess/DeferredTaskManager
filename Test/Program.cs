@@ -30,15 +30,21 @@ Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (
     Console.WriteLine("Something went wrong...");
 };
 
-IDeferredTaskManagerService<string> _manager = new DeferredTaskManagerService<string>(
-    new DeferredTaskManagerOptions<string>
+var dtmOptions = new DeferredTaskManagerOptions<string>
+{
+    TaskFactory = taskDelegate,
+    TaskPoolSize = 1,
+    CollectionType = CollectionType.Queue,
+    RetryOptions = new RetryOptions<string>
     {
-        TaskFactory = taskDelegate,
-        TaskPoolSize = 1,
-        CollectionType = CollectionType.Queue,
-        RetryOptions = new RetryOptions<string> { RetryCount = 3, MillisecondsRetryDelay = 10000 }
-    });
+        RetryCount = 3,
+        MillisecondsRetryDelay = 10000,
+        TaskFactoryRetryExhausted = taskDelegateRetryExhausted
+    }
+};
 
-await testProcess.StartTest(_manager);
+IDeferredTaskManagerService<string> manager = new DeferredTaskManagerService<string>();
+
+await testProcess.StartTest(manager, dtmOptions);
 
 Console.ReadKey();

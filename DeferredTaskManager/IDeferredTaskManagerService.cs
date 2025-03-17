@@ -8,7 +8,7 @@ namespace DTM
     {
         void Add(T @event);
         void Add(IEnumerable<T> events);
-        Task StartAsync(CancellationToken cancellationToken = default);
+        Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
         int TaskCount { get; }
         int SubscribersCount { get; }
     }

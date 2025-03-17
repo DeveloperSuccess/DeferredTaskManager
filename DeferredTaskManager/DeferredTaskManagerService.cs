@@ -14,28 +14,17 @@ namespace DTM
         private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
         private readonly object _locksIsStarted = new object();
         private readonly PubSub _pubSub = new PubSub();
-        private readonly ICollectionStrategy<T> _collectionStrategy = default!;
-        private readonly DeferredTaskManagerOptions<T> _dtmOptions;
 
+        private ICollectionStrategy<T> _collectionStrategy = default!;
+        private DeferredTaskManagerOptions<T> _dtmOptions;
         private bool _isStarted = false;
 
         public int TaskCount => _collectionStrategy.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;
 
-        public DeferredTaskManagerService(DeferredTaskManagerOptions<T> deferredTaskManagerOptions)
+        public DeferredTaskManagerService()
         {
-            _dtmOptions = deferredTaskManagerOptions ?? throw new ArgumentNullException(nameof(deferredTaskManagerOptions));
 
-            var context = new ValidationContext(deferredTaskManagerOptions, serviceProvider: null, items: null);
-
-            Validator.ValidateObject(deferredTaskManagerOptions, context, true);
-
-            _collectionStrategy = _dtmOptions.CollectionType switch
-            {
-                CollectionType.Bag => new BagStrategy<T>(),
-                CollectionType.Queue => new QueueStrategy<T>(),
-                _ => throw new ArgumentException("Unacceptable collection type"),
-            };
         }
 
         public void Add(T @event)
@@ -71,13 +60,26 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken = default)
+        public async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
                 if (_isStarted) return;
                 _isStarted = true;
             }
+
+            _dtmOptions = deferredTaskManagerOptions ?? throw new ArgumentNullException(nameof(deferredTaskManagerOptions));
+
+            var context = new ValidationContext(deferredTaskManagerOptions, serviceProvider: null, items: null);
+
+            Validator.ValidateObject(deferredTaskManagerOptions, context, true);
+
+            _collectionStrategy = _dtmOptions.CollectionType switch
+            {
+                CollectionType.Bag => new BagStrategy<T>(),
+                CollectionType.Queue => new QueueStrategy<T>(),
+                _ => throw new ArgumentException("Unacceptable collection type"),
+            };
 
             var taskPool = new List<Task>();
 

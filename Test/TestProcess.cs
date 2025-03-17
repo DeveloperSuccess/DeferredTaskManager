@@ -19,7 +19,7 @@ namespace Test
 
         }
 
-        internal async Task StartTest(IDeferredTaskManagerService<string> manager)
+        internal async Task StartTest(IDeferredTaskManagerService<string> manager, DeferredTaskManagerOptions<string> deferredTaskManagerOptions)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
 
@@ -27,7 +27,7 @@ namespace Test
 
             stopwatch.Start();
 
-            Task.Run(() => _manager.StartAsync(default), default);
+            Task.Run(() => _manager.StartAsync(deferredTaskManagerOptions), default);
 
             await AddAsync();
             CountingTotalExecutionTime();
@@ -77,5 +77,4 @@ namespace Test
             while (_numberCompletedEvents.Sum() < _threadCount * _itemCount) ;
         }
     }
-
 }
