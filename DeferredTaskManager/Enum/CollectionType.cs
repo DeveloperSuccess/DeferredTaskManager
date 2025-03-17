@@ -1,4 +1,4 @@
-﻿namespace DTM.Enum
+﻿namespace DTM
 {
     public enum CollectionType
     {

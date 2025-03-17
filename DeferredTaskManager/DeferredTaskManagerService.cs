@@ -1,8 +1,8 @@
 ﻿using DTM.CollectionStrategy;
-using DTM.Enum;
 using DTM.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,19 +14,28 @@ namespace DTM
         private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
         private readonly object _locksIsStarted = new object();
         private readonly PubSub _pubSub = new PubSub();
+        private readonly ICollectionStrategy<T> _collectionStrategy = default!;
+        private readonly DeferredTaskManagerOptions<T> _dtmOptions;
+
+        private bool _isStarted = false;
 
         public int TaskCount => _collectionStrategy.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;
 
-        private ICollectionStrategy<T> _collectionStrategy = default!;
-        private Func<List<T>, CancellationToken, Task> _taskFactory = default!;
-        private Func<List<T>, CancellationToken, Task>? _taskFactoryRetryExhausted = null;
-        private int _retry;
-        private int _millisecondsRetryDelay;
-        private bool _isStarted = false;
-
-        public DeferredTaskManagerService()
+        public DeferredTaskManagerService(DeferredTaskManagerOptions<T> deferredTaskManagerOptions)
         {
+            _dtmOptions = deferredTaskManagerOptions ?? throw new ArgumentNullException(nameof(deferredTaskManagerOptions));
+
+            var context = new ValidationContext(deferredTaskManagerOptions, serviceProvider: null, items: null);
+
+            Validator.ValidateObject(deferredTaskManagerOptions, context, true);
+
+            _collectionStrategy = _dtmOptions.CollectionType switch
+            {
+                CollectionType.Bag => new BagStrategy<T>(),
+                CollectionType.Queue => new QueueStrategy<T>(),
+                _ => throw new ArgumentException("Unacceptable collection type"),
+            };
         }
 
         public void Add(T @event)
@@ -62,7 +71,7 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
-        public async Task StartAsync(Func<List<T>, CancellationToken, Task> taskFactory, int taskPoolSize = 1000, CollectionType collectionType = CollectionType.Queue, int retry = 0, int millisecondsRetryDelay = 100, Func<List<T>, CancellationToken, Task>? taskFactoryRetryExhausted = null, CancellationToken cancellationToken = default)
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
@@ -70,24 +79,9 @@ namespace DTM
                 _isStarted = true;
             }
 
-            _taskFactory = taskFactory ?? throw new ArgumentNullException(nameof(taskFactory));
-
-            _taskFactoryRetryExhausted = taskFactoryRetryExhausted;
-
-            _collectionStrategy = collectionType switch
-            {
-                CollectionType.Bag => new BagStrategy<T>(),
-                CollectionType.Queue => new QueueStrategy<T>(),
-                _ => throw new ArgumentException("Unacceptable collection type"),
-            };
-
-            _retry = retry;
-
-            _millisecondsRetryDelay = millisecondsRetryDelay;
-
             var taskPool = new List<Task>();
 
-            for (int i = 0; i < taskPoolSize; i++)
+            for (int i = 0; i < _dtmOptions.TaskPoolSize; i++)
             {
                 taskPool.Add(SenderAsync(cancellationToken));
             }
@@ -123,7 +117,7 @@ namespace DTM
 
                 if (events.Count == 0) continue;
 
-                await SendEventsAsync(events, _retry, cancellationToken).ConfigureAwait(false);
+                await SendEventsAsync(events, _dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -151,21 +145,21 @@ namespace DTM
         {
             try
             {
-                await _taskFactory(events, cancellationToken).ConfigureAwait(false);
+                await _dtmOptions.TaskFactory(events, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 if (retry == 0)
                 {
-                    if (_taskFactoryRetryExhausted != null)
+                    if (_dtmOptions.RetryOptions.TaskFactoryRetryExhausted != null)
                     {
-                        await _taskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                        await _dtmOptions.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
                     }
 
                     return;
                 }
 
-                await Task.Delay(_millisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(_dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
                 await SendEventsAsync(events, retry - 1, cancellationToken).ConfigureAwait(false);
             }

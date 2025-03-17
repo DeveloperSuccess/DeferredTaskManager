@@ -1,102 +1,44 @@
 ﻿using DTM;
-using DTM.Enum;
-using System.Collections.Concurrent;
-using System.Diagnostics;
+using Test;
 
-const int _threadCount = 10;
-const int _itemCount = 500000;
+var testProcess = new TestProcess();
 
-bool _start = false;
+Func<List<string>, CancellationToken, Task> taskDelegate = async (events, cancellationToken) =>
+{
+    try
+    {
+        var test = string.Join(",", events);
 
-Stopwatch stopwatch = new Stopwatch();
+        testProcess.AddNumberCompletedEvents(events.Count);
 
-stopwatch.Start();
+        // Тестовое исключение
+        // throw new Exception("Тестовое исключение");
 
-IDeferredTaskManagerService<string> _manager = new DeferredTaskManagerService<string>();
-ConcurrentBag<int> _numberCompletedEvents = new ConcurrentBag<int>();
+        await Task.Delay(10, cancellationToken);
+    }
+    catch (Exception ex)
+    {
+        // Пример обработки исключений (в случае ошибки можно оставить в коллекции выполненные а остальные пойдут в retry)
+        events.Remove(events.FirstOrDefault());
 
-ExecuteAsync(default);
+        throw new Exception("Sending to retry after exclusion");
+    }
+};
 
-await AddAsync();
+Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+{
+    Console.WriteLine("Something went wrong...");
+};
 
-CountingTotalExecutionTime();
+IDeferredTaskManagerService<string> _manager = new DeferredTaskManagerService<string>(
+    new DeferredTaskManagerOptions<string>
+    {
+        TaskFactory = taskDelegate,
+        TaskPoolSize = 1,
+        CollectionType = CollectionType.Queue,
+        RetryOptions = new RetryOptions<string> { RetryCount = 3, MillisecondsRetryDelay = 10000 }
+    });
 
-stopwatch.Stop();
-
-Console.WriteLine($"Общее время выполнения: {stopwatch.ElapsedMilliseconds} ms, эвентов завершено {_numberCompletedEvents.Sum()}");
+await testProcess.StartTest(_manager);
 
 Console.ReadKey();
-
-async Task AddAsync()
-{
-    while (_start == false && _manager?.SubscribersCount == 0) ;
-
-    _start = true;
-
-    Stopwatch stopwatch = new Stopwatch();
-
-    stopwatch.Start();
-
-    var tasks = new List<Task>();
-
-    for (int i = 0; i < _threadCount; i++)
-        tasks.Add(Task.Run(() => Add()));
-
-    await Task.WhenAll(tasks);
-
-    stopwatch.Stop();
-
-    Console.WriteLine($"Время добавления составило: {stopwatch.ElapsedMilliseconds} ms, эвентов завершено {_numberCompletedEvents.Sum()}");
-}
-
-void Add()
-{
-    for (int i = 0; i < _itemCount; i++)
-    {
-        _manager.Add(Guid.NewGuid().ToString() + " The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue.");
-    }
-}
-
-Task ExecuteAsync(CancellationToken cancellationToken)
-{
-    Func<List<string>, CancellationToken, Task> taskDelegate = async (events, cancellationToken) =>
-    {
-        try
-        {
-            var test = string.Join(",", events);
-
-            _numberCompletedEvents.Add(events.Count);
-
-            // Тестовое исключение
-            // throw new Exception("Тестовое исключение");
-
-            await Task.Delay(10, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            // Пример обработки исключений (в случае ошибки можно оставить в коллекции выполненные а остальные пойдут в retry)
-            events.Remove(events.FirstOrDefault());
-
-            throw new Exception("Отправка в retry после исключения");
-        }
-    };
-
-    Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
-    {
-        Console.WriteLine("Что-то пошло не так...");
-    };
-
-    return Task.Run(() => _manager.StartAsync(
-        taskFactory: taskDelegate,
-        taskPoolSize: 1,
-        collectionType: CollectionType.Bag,
-        retry: 3,
-        millisecondsRetryDelay: 1000,
-        taskFactoryRetryExhausted: taskDelegateRetryExhausted,
-        cancellationToken: cancellationToken), cancellationToken);
-}
-
-void CountingTotalExecutionTime()
-{
-    while (_numberCompletedEvents.Sum() < _threadCount * _itemCount) ;
-}
