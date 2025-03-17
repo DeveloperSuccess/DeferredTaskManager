@@ -28,12 +28,30 @@ internal sealed class EventManagerService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Func<IEnumerable<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
+        Func<List<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
         {
             return Task.Delay(1000000, cancellationToken);
         };
 
-        return Task.Run(() => _deferredTaskManager.StartAsync(taskDelegate, cancellationToken: cancellationToken), cancellationToken);
+        Func<List<object>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+        {
+            Console.WriteLine("Something went wrong...");
+        };
+
+        var dtmOptions = new DeferredTaskManagerOptions<string>
+        {
+            TaskFactory = taskDelegate,
+            TaskPoolSize = 1,
+            CollectionType = CollectionType.Queue,
+            RetryOptions = new RetryOptions<string>
+            {
+                RetryCount = 3,
+                MillisecondsRetryDelay = 10000,
+                TaskFactoryRetryExhausted = taskDelegateRetryExhausted
+            }
+        };
+
+        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
     }
 }
 ```
