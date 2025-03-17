@@ -34,7 +34,25 @@ internal sealed class EventManagerService : BackgroundService
             return Task.Delay(1000000, cancellationToken);
         };
 
-        return Task.Run(() => _deferredTaskManager.StartAsync(taskDelegate, cancellationToken: cancellationToken), cancellationToken);
+        Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+        {
+            Console.WriteLine("Something went wrong...");
+        };
+
+        var dtmOptions = new DeferredTaskManagerOptions<string>
+        {
+            TaskFactory = taskDelegate,
+            TaskPoolSize = 1,
+            CollectionType = CollectionType.Queue,
+            RetryOptions = new RetryOptions<string>
+            {
+                RetryCount = 3,
+                MillisecondsRetryDelay = 10000,
+                TaskFactoryRetryExhausted = taskDelegateRetryExhausted
+            }
+        };
+
+        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
     }
 }
 ```
