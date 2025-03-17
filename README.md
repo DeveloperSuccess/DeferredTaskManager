@@ -29,12 +29,12 @@ internal sealed class EventManagerService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Func<IEnumerable<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
+        Func<List<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
         {
             return Task.Delay(1000000, cancellationToken);
         };
 
-        Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+        Func<List<object>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
         {
             Console.WriteLine("Something went wrong...");
         };
