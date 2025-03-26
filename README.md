@@ -7,6 +7,10 @@
 
 The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue. Classic runners usually do not wait, but constantly check the queue for tasks. The current implementation uses the PubSub pattern to wait for new tasks, which makes this approach more reactive but less resource-intensive.
 
+## Distinctive advantage
+
+The solution allows for consolidation and deduplication of objects, which can reduce resources during further transmission and processing, as well as increase performance.
+
 ## Usage example
 
 1️⃣ Injection of the Singleton dependency with the required data type:
@@ -57,7 +61,9 @@ internal sealed class EventManagerService : BackgroundService
 }
 ```
 
-A delegate with your logic must be passed to the launch method. The size of the runners pool and the parameters for resending in case of errors are variable. You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
+The pool size is variable and is selected by the developer for a specific range of tasks, focusing on the speed of execution and the amount of resources consumed.
+
+You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
 
 You can also pass an error handling delegate that will trigger when the specified number of retries is exhausted.
 
