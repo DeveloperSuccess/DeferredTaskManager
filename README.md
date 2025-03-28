@@ -5,11 +5,11 @@
 [![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
 
 
-The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue. Classic runners usually do not wait, but constantly check the queue for tasks. The current implementation uses the PubSub pattern to wait for new tasks, which makes this approach more reactive but less resource-intensive.
+The implementation allows you to use multiple background tasks (or "runners") for deferred processing of consolidated data. Runners are based on the PubSub template for asynchronous waiting for new tasks, which makes this approach more reactive but less resource-intensive.
 
 ## Distinctive advantage
 
-The solution allows for consolidation and deduplication of objects, which can reduce resources during further transmission and processing, as well as increase performance.
+The solution allows data consolidation in the current instance with the possibility of variable deduplication or any other operations at the discretion of the developer, which can reduce resources during further transmission and processing, as well as increase performance.
 
 ## Usage example
 
