@@ -1,10 +1,10 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
 
-# Диспетчер отложенных задач C# на основе паттерна Runners
+# Диспетчер фоновых задач C# на основе паттерна Runners
 
-[![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
+[![NuGet version (BackgroundTaskManager)](https://img.shields.io/nuget/v/BackgroundTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/BackgroundTaskManager)
 
-Реализация позволяет использовать несколько фоновых задач (или «раннеров») для отложенной обработки консолидированных данных. Раннеры построены на шаблоне PubSub для асинхронного ожидания новых задач, что делает этот подход более реактивным, но менее ресурсоемким.
+Реализация позволяет использовать несколько фоновых задач (или «раннеров») для фоновой обработки консолидированных данных. Раннеры построены на шаблоне PubSub для асинхронного ожидания новых задач, что делает этот подход более реактивным, но менее ресурсоемким.
 
 ## Отличительное преимущество
 
@@ -15,19 +15,19 @@
 1️⃣ Внедрение Singleton зависимости с требуемым типом данных:
 
 ```
-services.AddSingleton<IDeferredTaskManagerService<object>, DeferredTaskManagerService<object>>();
+services.AddSingleton<IBackgroundTaskManagerService<object>, BackgroundTaskManagerService<object>>();
 ```
 
-2️⃣ Фоновые задачи выполняются в отдельном потоке от фоновой службы, при желании вы можете запустить каждый DeferredTaskManager в отдельном потоке:
+2️⃣ Фоновые задачи выполняются в отдельном потоке от фоновой службы, при желании вы можете запустить каждый BackgroundTaskManager в отдельном потоке:
 
 ```
 internal sealed class EventManagerService : BackgroundService
 {
-    private readonly IDeferredTaskManagerService<object> _deferredTaskManager;
+    private readonly IBackgroundTaskManagerService<object> _backgroundTaskManager;
 
-    public EventManagerService(IDeferredTaskManagerService<object> deferredTaskManager)
+    public EventManagerService(IBackgroundTaskManagerService<object> backgroundTaskManager)
     {
-        _deferredTaskManager = deferredTaskManager ?? throw new ArgumentNullException(nameof(deferredTaskManager));
+        _backgroundTaskManager = backgroundTaskManager ?? throw new ArgumentNullException(nameof(backgroundTaskManager));
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ internal sealed class EventManagerService : BackgroundService
             Console.WriteLine("Something went wrong...");
         };
 
-        var dtmOptions = new DeferredTaskManagerOptions<string>
+        var dtmOptions = new BackgroundTaskManagerOptions<string>
         {
             TaskFactory = taskDelegate,
             TaskPoolSize = 1,
@@ -55,7 +55,7 @@ internal sealed class EventManagerService : BackgroundService
             }
         };
 
-        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
+        return Task.Run(() => _backgroundTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
     }
 }
 ```
@@ -66,8 +66,8 @@ internal sealed class EventManagerService : BackgroundService
 
 Вы также можете передать делегат обработки ошибок, который сработает, когда будет исчерпано указанное количество повторных попыток. 
 
-3️⃣ Отправка данных в Deferred Task Manager для последующего выполнения:
+3️⃣ Отправка данных в Background Task Manager для последующего выполнения:
 
 ```
-_deferredTaskManager.Add(events);
+_backgroundTaskManager.Add(events);
 ```

@@ -1,11 +1,11 @@
 [![ru](https://img.shields.io/badge/lang-ru-green.svg)](./README.ru.md)
 
-# Deferred Task Manager C# based on the Runners pattern
+# Background Task Manager C# based on the Runners pattern
 
-[![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
+[![NuGet version (BackgroundTaskManager)](https://img.shields.io/nuget/v/BackgroundTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/BackgroundTaskManager)
 
 
-The implementation allows you to use multiple background tasks (or "runners") for deferred processing of consolidated data. Runners are based on the PubSub template for asynchronous waiting for new tasks, which makes this approach more reactive but less resource-intensive.
+The implementation allows you to use multiple background tasks (or "runners") for background processing of consolidated data. Runners are based on the PubSub template for asynchronous waiting for new tasks, which makes this approach more reactive but less resource-intensive.
 
 ## Distinctive advantage
 
@@ -16,19 +16,19 @@ The solution allows data consolidation in the current instance with the possibil
 1️⃣ Injection of the Singleton dependency with the required data type:
 
 ```
-services.AddSingleton<IDeferredTaskManagerService<object>, DeferredTaskManagerService<object>>();
+services.AddSingleton<IBackgroundTaskManagerService<object>, BackgroundTaskManagerService<object>>();
 ```
 
-2️⃣ Background tasks are executed in a separate thread from the background service, if desired, you can run each DeferredTaskManager in a separate thread:
+2️⃣ Background tasks are executed in a separate thread from the background service, if desired, you can run each BackgroundTaskManager in a separate thread:
 
 ```
 internal sealed class EventManagerService : BackgroundService
 {
-    private readonly IDeferredTaskManagerService<object> _deferredTaskManager;
+    private readonly IBackgroundTaskManagerService<object> _backgroundTaskManager;
 
-    public EventManagerService(IDeferredTaskManagerService<object> deferredTaskManager)
+    public EventManagerService(IBackgroundTaskManagerService<object> backgroundTaskManager)
     {
-        _deferredTaskManager = deferredTaskManager ?? throw new ArgumentNullException(nameof(deferredTaskManager));
+        _backgroundTaskManager = backgroundTaskManager ?? throw new ArgumentNullException(nameof(backgroundTaskManager));
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ internal sealed class EventManagerService : BackgroundService
             Console.WriteLine("Something went wrong...");
         };
 
-        var dtmOptions = new DeferredTaskManagerOptions<string>
+        var dtmOptions = new BackgroundTaskManagerOptions<string>
         {
             TaskFactory = taskDelegate,
             TaskPoolSize = 1,
@@ -56,7 +56,7 @@ internal sealed class EventManagerService : BackgroundService
             }
         };
 
-        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
+        return Task.Run(() => _backgroundTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
     }
 }
 ```
@@ -67,8 +67,8 @@ You can also specify the collection type, «Bag» for the Unordered collection o
 
 You can also pass an error handling delegate that will trigger when the specified number of retries is exhausted.
 
-3️⃣ Sending data to the Deferred Task Manager for subsequent execution:
+3️⃣ Sending data to the Background Task Manager for subsequent execution:
 
 ```
-_deferredTaskManager.Add(events);
+_backgroundTaskManager.Add(events);
 ```
