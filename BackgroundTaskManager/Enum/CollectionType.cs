@@ -1,4 +1,4 @@
-﻿namespace DTM
+﻿namespace BTM
 {
     public enum CollectionType
     {

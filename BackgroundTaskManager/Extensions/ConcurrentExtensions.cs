@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace DTM.Extensions
+namespace BTM.Extensions
 {
     internal static class ConcurrentExtensions
     {

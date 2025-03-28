@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DTM.CollectionStrategy
+namespace BTM.CollectionStrategy
 {
     internal interface ICollectionStrategy<T>
     {

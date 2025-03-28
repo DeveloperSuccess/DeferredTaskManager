@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DTM
+namespace BTM
 {
-    public interface IDeferredTaskManagerService<T>
+    public interface IBackgroundTaskManagerService<T>
     {
         void Add(T @event);
         void Add(IEnumerable<T> events);
-        Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
+        Task StartAsync(BackgroundTaskManagerOptions<T> BackgroundTaskManagerOptions, CancellationToken cancellationToken = default);
         int TaskCount { get; }
         int SubscribersCount { get; }
     }

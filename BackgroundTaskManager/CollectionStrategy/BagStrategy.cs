@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DTM.CollectionStrategy
+namespace BTM.CollectionStrategy
 {
     internal class BagStrategy<T> : ICollectionStrategy<T>
     {
