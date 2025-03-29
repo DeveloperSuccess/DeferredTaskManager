@@ -60,6 +60,35 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
+        public void AddWithoutSend(T @event)
+        {
+            _lockBag.EnterReadLock();
+
+            try
+            {
+                _collectionStrategy.Add(@event);
+            }
+            finally
+            {
+                _lockBag.ExitReadLock();
+            }
+        }
+
+        public void AddWithoutSend(IEnumerable<T> events)
+        {
+            _lockBag.EnterReadLock();
+
+            try
+            {
+                foreach (var ev in events)
+                    _collectionStrategy.Add(ev);
+            }
+            finally
+            {
+                _lockBag.ExitReadLock();
+            }
+        }
+
         public async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
@@ -89,6 +118,11 @@ namespace DTM
             }
 
             await Task.WhenAll(taskPool).ConfigureAwait(false);
+        }
+
+        public void Send()
+        {
+            _pubSub.SendEvents();
         }
 
         private async Task SenderAsync(CancellationToken cancellationToken)
