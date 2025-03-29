@@ -17,6 +17,8 @@ namespace DTM
         [Required]
         public CollectionType CollectionType { get; set; } = CollectionType.Queue;
 
+        public SendDelayOptions? SendDelayOptions { get; set; }
+
         [Required]
         public RetryOptions<T> RetryOptions { get; set; } = new RetryOptions<T>();
     }

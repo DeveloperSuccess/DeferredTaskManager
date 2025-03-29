@@ -3,6 +3,7 @@ using DTM.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,12 +118,42 @@ namespace DTM
                 taskPool.Add(SenderAsync(cancellationToken));
             }
 
+            if (deferredTaskManagerOptions.SendDelayOptions != null)
+                taskPool.Add(StartSendDelay(cancellationToken));
+
             await Task.WhenAll(taskPool).ConfigureAwait(false);
         }
 
-        public void Send()
+        public void SendEvents()
         {
             _pubSub.SendEvents();
+        }
+
+        public async Task StartSendDelay(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (!_dtmOptions.SendDelayOptions.ConsiderDifference)
+                {
+                    _pubSub.SendEvents();
+
+                    await Task.Delay((_dtmOptions.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
+
+                    continue;
+                }
+
+                Stopwatch stopWatch = new Stopwatch();
+
+                stopWatch.Start();
+
+                _pubSub.SendEvents();
+
+                stopWatch.Stop();
+
+                var delay = _dtmOptions.SendDelayOptions.MillisecondsSendDelay - (int)stopWatch.ElapsedMilliseconds;
+
+                await Task.Delay(delay > 0 ? delay : 0, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private async Task SenderAsync(CancellationToken cancellationToken)
@@ -153,7 +184,7 @@ namespace DTM
 
                 if (events.Count == 0) continue;
 
-                await SendEventsAsync(events, _dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                await SendEventsAsync(events, _dtmOptions.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -177,7 +208,7 @@ namespace DTM
             return result;
         }
 
-        private async Task SendEventsAsync(List<T> events, int retry, CancellationToken cancellationToken)
+        private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)
         {
             try
             {
@@ -185,7 +216,7 @@ namespace DTM
             }
             catch
             {
-                if (retry == 0)
+                if (retryCount == 0)
                 {
                     if (_dtmOptions.RetryOptions.TaskFactoryRetryExhausted != null)
                     {
@@ -197,7 +228,7 @@ namespace DTM
 
                 await Task.Delay(_dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
-                await SendEventsAsync(events, retry - 1, cancellationToken).ConfigureAwait(false);
+                await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
             }
         }
     }

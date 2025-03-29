@@ -35,6 +35,11 @@ var dtmOptions = new DeferredTaskManagerOptions<string>
     TaskFactory = taskDelegate,
     TaskPoolSize = 1,
     CollectionType = CollectionType.Queue,
+    SendDelayOptions = new SendDelayOptions()
+    {
+        MillisecondsSendDelay = 60000,
+        ConsiderDifference = true
+    },
     RetryOptions = new RetryOptions<string>
     {
         RetryCount = 3,
