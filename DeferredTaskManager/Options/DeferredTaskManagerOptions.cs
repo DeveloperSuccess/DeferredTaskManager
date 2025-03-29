@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
+    /// <summary>
+    /// Options for Deferred Task Manager
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class DeferredTaskManagerOptions<T>
     {
         /// <summary>

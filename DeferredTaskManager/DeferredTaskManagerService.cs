@@ -10,12 +10,7 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    /// <summary>
-    /// Allows you to use multiple background tasks (or "runners") for deferred processing of consolidated data. 
-    /// Runners are based on the PubSub template for asynchronous waiting for new tasks, 
-    /// which makes this approach more reactive but less resource-intensive.
-    /// </summary>
-    /// <typeparamref name="T"></typeparamref>
+    /// <inheritdoc/>
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
@@ -26,25 +21,16 @@ namespace DTM
         private DeferredTaskManagerOptions<T> _dtmOptions = default!;
         private bool _isStarted = false;
 
-        /// <summary>
-        /// Number of unprocessed events
-        /// </summary>
+        /// <inheritdoc/>
         public int Count => _collectionStrategy.Count;
 
-        /// <summary>
-        /// Number of free runners in the pool
-        /// </summary>
+        /// <inheritdoc/>
         public int FreePoolCount => _pubSub.SubscribersCount;
 
-        /// <summary>
-        /// Number of employed runners in the pool
-        /// </summary>
+        /// <inheritdoc/>
         public int EmployedPoolCount => _dtmOptions.PoolSize - _pubSub.SubscribersCount;
-
-        /// <summary>
-        /// Adding an event to be sent for processing
-        /// </summary>
-        /// <param name="event">Event for deferred processing</param>
+                
+        /// <inheritdoc/>
         public void Add(T @event)
         {
             _lockBag.EnterReadLock();
@@ -60,11 +46,8 @@ namespace DTM
 
             _pubSub.SendEvents();
         }
-
-        /// <summary>
-        /// Adding a collection of events to be sent for processing
-        /// </summary>
-        /// <param name="events">Events for deferred processing</param>
+                
+        /// <inheritdoc/>
         public void Add(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
@@ -82,10 +65,7 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
-        /// <summary>
-        /// Adding an event without sending for processing
-        /// </summary>
-        /// <param name="event">Event for deferred processing</param>
+        /// <inheritdoc/>
         public void AddWithoutSend(T @event)
         {
             _lockBag.EnterReadLock();
@@ -100,10 +80,7 @@ namespace DTM
             }
         }
 
-        /// <summary>
-        /// Adding a set of events without sending for processing
-        /// </summary>
-        /// <param name="events">Events for deferred processing</param>
+        /// <inheritdoc/>
         public void AddWithoutSend(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
@@ -119,6 +96,7 @@ namespace DTM
             }
         }
 
+        /// <inheritdoc/>
         public async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
@@ -153,14 +131,13 @@ namespace DTM
             await Task.WhenAll(taskPool).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Sending available events to the delegate for on-demand processing
-        /// </summary>
+        /// <inheritdoc/>
         public void SendEvents()
         {
             _pubSub.SendEvents();
         }
 
+        /// <inheritdoc/>
         private async Task StartSendDelay(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)

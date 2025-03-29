@@ -16,7 +16,7 @@ Func<List<string>, CancellationToken, Task> taskDelegate = async (events, cancel
 
         await Task.Delay(10, cancellationToken);
     }
-    catch (Exception ex)
+    catch
     {
         // Пример обработки исключений (в случае ошибки можно оставить в коллекции выполненные а остальные пойдут в retry)
         events.Remove(events.FirstOrDefault());
