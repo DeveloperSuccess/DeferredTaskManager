@@ -41,6 +41,10 @@ namespace DTM
         /// </summary>
         public int EmployedPoolCount => _dtmOptions.PoolSize - _pubSub.SubscribersCount;
 
+        /// <summary>
+        /// Adding an event to be sent for processing
+        /// </summary>
+        /// <param name="event">Event for deferred processing</param>
         public void Add(T @event)
         {
             _lockBag.EnterReadLock();
@@ -57,6 +61,10 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
+        /// <summary>
+        /// Adding a collection of events to be sent for processing
+        /// </summary>
+        /// <param name="events">Events for deferred processing</param>
         public void Add(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
@@ -74,6 +82,10 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
+        /// <summary>
+        /// Adding an event without sending for processing
+        /// </summary>
+        /// <param name="event">Event for deferred processing</param>
         public void AddWithoutSend(T @event)
         {
             _lockBag.EnterReadLock();
@@ -88,6 +100,10 @@ namespace DTM
             }
         }
 
+        /// <summary>
+        /// Adding a set of events without sending for processing
+        /// </summary>
+        /// <param name="events">Events for deferred processing</param>
         public void AddWithoutSend(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
@@ -137,12 +153,15 @@ namespace DTM
             await Task.WhenAll(taskPool).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sending available events to the delegate for on-demand processing
+        /// </summary>
         public void SendEvents()
         {
             _pubSub.SendEvents();
         }
 
-        public async Task StartSendDelay(CancellationToken cancellationToken)
+        private async Task StartSendDelay(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
