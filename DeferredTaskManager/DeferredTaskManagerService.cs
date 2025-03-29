@@ -1,5 +1,5 @@
-﻿using BTM.CollectionStrategy;
-using BTM.Extensions;
+﻿using DTM.CollectionStrategy;
+using DTM.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,22 +7,22 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BTM
+namespace DTM
 {
-    public class BackgroundTaskManagerService<T> : IBackgroundTaskManagerService<T>
+    public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
         private readonly object _locksIsStarted = new object();
         private readonly PubSub _pubSub = new PubSub();
 
         private ICollectionStrategy<T> _collectionStrategy = default!;
-        private BackgroundTaskManagerOptions<T> _BTMOptions;
+        private DeferredTaskManagerOptions<T> _dtmOptions;
         private bool _isStarted = false;
 
         public int TaskCount => _collectionStrategy.Count;
         public int SubscribersCount => _pubSub.SubscribersCount;
 
-        public BackgroundTaskManagerService()
+        public DeferredTaskManagerService()
         {
 
         }
@@ -60,7 +60,7 @@ namespace BTM
             _pubSub.SendEvents();
         }
 
-        public async Task StartAsync(BackgroundTaskManagerOptions<T> BackgroundTaskManagerOptions, CancellationToken cancellationToken = default)
+        public async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
@@ -68,13 +68,13 @@ namespace BTM
                 _isStarted = true;
             }
 
-            _BTMOptions = BackgroundTaskManagerOptions ?? throw new ArgumentNullException(nameof(BackgroundTaskManagerOptions));
+            _dtmOptions = deferredTaskManagerOptions ?? throw new ArgumentNullException(nameof(deferredTaskManagerOptions));
 
-            var context = new ValidationContext(BackgroundTaskManagerOptions, serviceProvider: null, items: null);
+            var context = new ValidationContext(deferredTaskManagerOptions, serviceProvider: null, items: null);
 
-            Validator.ValidateObject(BackgroundTaskManagerOptions, context, true);
+            Validator.ValidateObject(deferredTaskManagerOptions, context, true);
 
-            _collectionStrategy = _BTMOptions.CollectionType switch
+            _collectionStrategy = _dtmOptions.CollectionType switch
             {
                 CollectionType.Bag => new BagStrategy<T>(),
                 CollectionType.Queue => new QueueStrategy<T>(),
@@ -83,7 +83,7 @@ namespace BTM
 
             var taskPool = new List<Task>();
 
-            for (int i = 0; i < _BTMOptions.TaskPoolSize; i++)
+            for (int i = 0; i < _dtmOptions.TaskPoolSize; i++)
             {
                 taskPool.Add(SenderAsync(cancellationToken));
             }
@@ -119,7 +119,7 @@ namespace BTM
 
                 if (events.Count == 0) continue;
 
-                await SendEventsAsync(events, _BTMOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                await SendEventsAsync(events, _dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -147,21 +147,21 @@ namespace BTM
         {
             try
             {
-                await _BTMOptions.TaskFactory(events, cancellationToken).ConfigureAwait(false);
+                await _dtmOptions.TaskFactory(events, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 if (retry == 0)
                 {
-                    if (_BTMOptions.RetryOptions.TaskFactoryRetryExhausted != null)
+                    if (_dtmOptions.RetryOptions.TaskFactoryRetryExhausted != null)
                     {
-                        await _BTMOptions.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                        await _dtmOptions.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
                     }
 
                     return;
                 }
 
-                await Task.Delay(_BTMOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(_dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
                 await SendEventsAsync(events, retry - 1, cancellationToken).ConfigureAwait(false);
             }

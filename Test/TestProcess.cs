@@ -1,4 +1,4 @@
-﻿using BTM;
+﻿using DTM;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -10,7 +10,7 @@ namespace Test
         const int _itemCount = 500000;
 
         private readonly ConcurrentBag<int> _numberCompletedEvents = [];
-        private IBackgroundTaskManagerService<string> _manager;
+        private IDeferredTaskManagerService<string> _manager;
 
         bool _start = false;
 
@@ -19,7 +19,7 @@ namespace Test
 
         }
 
-        internal async Task StartTest(IBackgroundTaskManagerService<string> manager, BackgroundTaskManagerOptions<string> BackgroundTaskManagerOptions)
+        internal async Task StartTest(IDeferredTaskManagerService<string> manager, DeferredTaskManagerOptions<string> deferredTaskManagerOptions)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
 
@@ -27,7 +27,7 @@ namespace Test
 
             stopwatch.Start();
 
-            Task.Run(() => _manager.StartAsync(BackgroundTaskManagerOptions), default);
+            Task.Run(() => _manager.StartAsync(deferredTaskManagerOptions), default);
 
             await AddAsync();
             CountingTotalExecutionTime();

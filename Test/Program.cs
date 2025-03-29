@@ -1,4 +1,4 @@
-﻿using BTM;
+﻿using DTM;
 using Test;
 
 var testProcess = new TestProcess();
@@ -30,7 +30,7 @@ Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (
     Console.WriteLine("Something went wrong...");
 };
 
-var BTMOptions = new BackgroundTaskManagerOptions<string>
+var dtmOptions = new DeferredTaskManagerOptions<string>
 {
     TaskFactory = taskDelegate,
     TaskPoolSize = 1,
@@ -43,8 +43,8 @@ var BTMOptions = new BackgroundTaskManagerOptions<string>
     }
 };
 
-IBackgroundTaskManagerService<string> manager = new BackgroundTaskManagerService<string>();
+IDeferredTaskManagerService<string> manager = new DeferredTaskManagerService<string>();
 
-await testProcess.StartTest(manager, BTMOptions);
+await testProcess.StartTest(manager, dtmOptions);
 
 Console.ReadKey();

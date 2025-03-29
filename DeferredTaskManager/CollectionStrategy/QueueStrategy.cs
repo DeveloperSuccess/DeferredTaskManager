@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace BTM.CollectionStrategy
+namespace DTM.CollectionStrategy
 {
     internal class QueueStrategy<T> : ICollectionStrategy<T>
     {

@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BTM
+namespace DTM
 {
-    public class BackgroundTaskManagerOptions<T>
+    public class DeferredTaskManagerOptions<T>
     {
         [Required]
         public Func<List<T>, CancellationToken, Task> TaskFactory { get; set; }

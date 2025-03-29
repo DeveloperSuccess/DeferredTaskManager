@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BackgroundTaskManager\BackgroundTaskManager.csproj" />
+    <ProjectReference Include="..\DeferredTaskManager\DeferredTaskManager.csproj" />
   </ItemGroup>
 
 </Project>

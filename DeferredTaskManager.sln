@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackgroundTaskManager", "BackgroundTaskManager\BackgroundTaskManager.csproj", "{9DF87CEE-0C73-4F1F-A015-CB0848A3CBF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeferredTaskManager", "DeferredTaskManager\DeferredTaskManager.csproj", "{9DF87CEE-0C73-4F1F-A015-CB0848A3CBF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{294B0CF4-3F03-448C-B5A3-9258A8F7180B}"
 EndProject
