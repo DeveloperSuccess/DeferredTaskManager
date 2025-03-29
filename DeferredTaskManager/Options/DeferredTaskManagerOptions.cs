@@ -22,7 +22,7 @@ namespace DTM
         /// execution and the amount of resources consumed.
         /// </summary>
         [Range(1, int.MaxValue, ErrorMessage = "The value must be greater than 0")]
-        public int TaskPoolSize { get; set; } = 1000;
+        public int PoolSize { get; set; } = 1000;
 
         /// <summary>
         /// Select collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.

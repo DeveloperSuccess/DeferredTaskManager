@@ -33,7 +33,7 @@ Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (
 var dtmOptions = new DeferredTaskManagerOptions<string>
 {
     TaskFactory = taskDelegate,
-    TaskPoolSize = 1,
+    PoolSize = 1,
     CollectionType = CollectionType.Queue,
     SendDelayOptions = new SendDelayOptions()
     {

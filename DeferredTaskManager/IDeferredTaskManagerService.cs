@@ -12,7 +12,8 @@ namespace DTM
         void AddWithoutSend(IEnumerable<T> events);
         void SendEvents();
         Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
-        int TaskCount { get; }
-        int SubscribersCount { get; }
+        int Count { get; }
+        int FreePoolCount { get; }
+        int EmployedPoolCount { get; }
     }
 }

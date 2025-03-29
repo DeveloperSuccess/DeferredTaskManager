@@ -39,7 +39,7 @@ namespace Test
 
         async Task AddAsync()
         {
-            while (_start == false && _manager?.SubscribersCount == 0) ;
+            while (_start == false && _manager?.FreePoolCount == 0) ;
 
             _start = true;
 

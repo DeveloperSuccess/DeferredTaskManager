@@ -10,6 +10,12 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
+    /// <summary>
+    /// Allows you to use multiple background tasks (or "runners") for deferred processing of consolidated data. 
+    /// Runners are based on the PubSub template for asynchronous waiting for new tasks, 
+    /// which makes this approach more reactive but less resource-intensive.
+    /// </summary>
+    /// <typeparamref name="T"></typeparamref>
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
@@ -17,16 +23,23 @@ namespace DTM
         private readonly PubSub _pubSub = new PubSub();
 
         private ICollectionStrategy<T> _collectionStrategy = default!;
-        private DeferredTaskManagerOptions<T> _dtmOptions;
+        private DeferredTaskManagerOptions<T> _dtmOptions = default!;
         private bool _isStarted = false;
 
-        public int TaskCount => _collectionStrategy.Count;
-        public int SubscribersCount => _pubSub.SubscribersCount;
+        /// <summary>
+        /// Number of unprocessed events
+        /// </summary>
+        public int Count => _collectionStrategy.Count;
 
-        public DeferredTaskManagerService()
-        {
+        /// <summary>
+        /// Number of free runners in the pool
+        /// </summary>
+        public int FreePoolCount => _pubSub.SubscribersCount;
 
-        }
+        /// <summary>
+        /// Number of employed runners in the pool
+        /// </summary>
+        public int EmployedPoolCount => _dtmOptions.PoolSize - _pubSub.SubscribersCount;
 
         public void Add(T @event)
         {
@@ -113,7 +126,7 @@ namespace DTM
 
             var taskPool = new List<Task>();
 
-            for (int i = 0; i < _dtmOptions.TaskPoolSize; i++)
+            for (int i = 0; i < _dtmOptions.PoolSize; i++)
             {
                 taskPool.Add(SenderAsync(cancellationToken));
             }
