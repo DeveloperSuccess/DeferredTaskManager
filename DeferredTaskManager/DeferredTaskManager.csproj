@@ -4,13 +4,13 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<BaseVersion>11.0.0</BaseVersion>
+	<BaseVersion>12.0.0</BaseVersion>
 	<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	<RepositoryUrl>https://github.com/DeveloperSuccess/DeferredTaskManager</RepositoryUrl>
 	<Authors>Arthur Bogdanov</Authors>
 	<Copyright>Copyright © Arthur Bogdanov. All rights reserved.</Copyright>
-	<PackageTags>task;threading;thread;async;await;multithreading;multitasking;deferred;runner;runners;queue;pool;background;multiple</PackageTags>
-	<Description>The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue. Classic runners usually do not wait, but constantly check the queue for tasks. The current implementation uses the PubSub pattern to wait for new tasks, which makes this approach more reactive but less resource-intensive.</Description>
+	<PackageTags>task;threading;thread;async;await;multithreading;multitasking;deferred;runner;runners;queue;pool;background;multiple;event-driven</PackageTags>
+	<Description>The implementation allows you to use multiple background tasks (or "runners") for deferred processing of consolidated data. Runners are based on the PubSub template for asynchronous waiting for new tasks, which makes this approach more reactive but less resource-intensive.</Description>
 	<RootNamespace>DTM</RootNamespace>
    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
