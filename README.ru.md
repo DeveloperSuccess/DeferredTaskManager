@@ -1,6 +1,6 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
 
-# Диспетчер отложенных задач C# на основе паттерна Runners
+# Событийный диспетчер отложенных задач C#
 
 [![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
 
