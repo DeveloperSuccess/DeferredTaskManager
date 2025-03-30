@@ -1,6 +1,6 @@
 [![ru](https://img.shields.io/badge/lang-ru-green.svg)](./README.ru.md)
 
-# Deferred Task Manager C# based on the Runners pattern
+# Event-driven Deferred Task Manager C#
 
 [![NuGet version (DeferredTaskManager)](https://img.shields.io/nuget/v/DeferredTaskManager.svg?style=flat-square)](https://www.nuget.org/packages/DeferredTaskManager)
 
