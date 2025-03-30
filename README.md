@@ -66,7 +66,7 @@ internal sealed class EventManagerService : BackgroundService
 }
 ```
 
-#### ⚪ ```TaskFactory``` — делегат для кастомной логики
+#### ⚪ ```TaskFactory``` — delegate for custom logic
 
 All custom logic is placed in the delegate `TaskFactory`, which receives a collection of consolidated events. This is where you can perform the necessary operations on them before further transmission/processing. You can also handle exceptions in the delegate (this is important if events are handled separately) by sending unprocessed events to the next session after the time delay specified in the parameters `MillisecondsRetryDelay`.
 ```
