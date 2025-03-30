@@ -18,7 +18,7 @@
 services.AddSingleton<IDeferredTaskManagerService<object>, DeferredTaskManagerService<object>>();
 ```
 
-### 2️⃣ Фоновые задачи выполняются в отдельном потоке от фоновой службы, при желании вы можете запустить каждый DeferredTaskManager в отдельном потоке:
+### 2️⃣ Создание фоновой службы с указанием необходимых параметров:
 
 ```
 internal sealed class EventManagerService : BackgroundService
