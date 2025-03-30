@@ -42,12 +42,17 @@ namespace DTM
         void SendEvents();
 
         /// <summary>
-        /// 
+        /// Launching Deferred Task Manager
         /// </summary>
         /// <paramref name="deferredTaskManagerOptions"/>
         /// <paramref name="cancellationToken"/>
-        /// <returns></returns>
         Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves collected events with further storage cleanup
+        /// </summary>
+        /// <returns>Collected events</returns>
+        List<T> GetEventsAndClearStorage();
 
         /// <summary>
         /// Number of unprocessed events

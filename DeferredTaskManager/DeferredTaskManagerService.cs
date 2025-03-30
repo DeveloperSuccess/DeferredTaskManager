@@ -29,9 +29,9 @@ namespace DTM
 
         /// <inheritdoc/>
         public int EmployedPoolCount => _dtmOptions.PoolSize - _pubSub.SubscribersCount;
-                
+
         /// <inheritdoc/>
-        public void Add(T @event)
+        public virtual void Add(T @event)
         {
             _lockBag.EnterReadLock();
 
@@ -46,9 +46,9 @@ namespace DTM
 
             _pubSub.SendEvents();
         }
-                
+
         /// <inheritdoc/>
-        public void Add(IEnumerable<T> events)
+        public virtual void Add(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
 
@@ -66,7 +66,7 @@ namespace DTM
         }
 
         /// <inheritdoc/>
-        public void AddWithoutSend(T @event)
+        public virtual void AddWithoutSend(T @event)
         {
             _lockBag.EnterReadLock();
 
@@ -81,7 +81,7 @@ namespace DTM
         }
 
         /// <inheritdoc/>
-        public void AddWithoutSend(IEnumerable<T> events)
+        public virtual void AddWithoutSend(IEnumerable<T> events)
         {
             _lockBag.EnterReadLock();
 
@@ -97,7 +97,7 @@ namespace DTM
         }
 
         /// <inheritdoc/>
-        public async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
+        public virtual async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
         {
             lock (_locksIsStarted)
             {
@@ -132,9 +132,30 @@ namespace DTM
         }
 
         /// <inheritdoc/>
-        public void SendEvents()
+        public virtual void SendEvents()
         {
             _pubSub.SendEvents();
+        }
+
+        /// <inheritdoc/>
+        public virtual List<T> GetEventsAndClearStorage()
+        {
+            List<T> result;
+
+            _lockBag.EnterWriteLock();
+
+            try
+            {
+                result = _collectionStrategy.GetItems().ToList();
+
+                _collectionStrategy.Clear();
+            }
+            finally
+            {
+                _lockBag.ExitWriteLock();
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -189,32 +210,12 @@ namespace DTM
                     _pubSub.Unsubscribe(subscriberKey);
                 }
 
-                var events = GetAndClearBag();
+                var events = GetEventsAndClearStorage();
 
                 if (events.Count == 0) continue;
 
                 await SendEventsAsync(events, _dtmOptions.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
             }
-        }
-
-        private List<T> GetAndClearBag()
-        {
-            List<T> result;
-
-            _lockBag.EnterWriteLock();
-
-            try
-            {
-                result = _collectionStrategy.GetItems().ToList();
-
-                _collectionStrategy.Clear();
-            }
-            finally
-            {
-                _lockBag.ExitWriteLock();
-            }
-
-            return result;
         }
 
         private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)
