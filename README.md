@@ -97,5 +97,5 @@ You can also pass an error handling delegate that will trigger when the specifie
 ```
 _deferredTaskManager.Add(events);
 ```
-## Other usage examples
+## Alternative uses
 The `DeferredTaskManager` can be used as a regular event store, receiving events on demand using the `GetEventsAndClearStorage` method, bypassing runners, or sending available events to a delegate to any available runner on demand using the `SendEvents` method.
