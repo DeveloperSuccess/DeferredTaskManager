@@ -39,7 +39,7 @@ namespace DTM
             });
 
             if (sendEvents)
-                _pubSub.SendEvents();
+                SendEvents();
         }
 
         /// <inheritdoc/>
@@ -52,7 +52,7 @@ namespace DTM
             });
 
             if (sendEvents)
-                _pubSub.SendEvents();
+                SendEvents();
         }
 
         /// <inheritdoc/>
@@ -126,7 +126,7 @@ namespace DTM
             {
                 if (!_options.SendDelayOptions.ConsiderDifference)
                 {
-                    _pubSub.SendEvents();
+                    SendEvents();
 
                     await Task.Delay((_options.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
 
@@ -137,7 +137,7 @@ namespace DTM
 
                 stopWatch.Start();
 
-                _pubSub.SendEvents();
+                SendEvents();
 
                 stopWatch.Stop();
 
