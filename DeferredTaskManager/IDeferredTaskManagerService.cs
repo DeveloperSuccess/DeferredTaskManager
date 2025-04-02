@@ -16,25 +16,13 @@ namespace DTM
         /// Adding an event to be sent for processing
         /// </summary>
         /// <param name="event">Event for deferred processing</param>
-        void Add(T @event);
+        void Add(T @event, bool sendEvents = true);
 
         /// <summary>
         /// Adding a collection of events to be sent for processing
         /// </summary>
         /// <param name="events">Events for deferred processing</param>
-        void Add(IEnumerable<T> events);
-
-        /// <summary>
-        /// Adding an event without sending for processing
-        /// </summary>
-        /// <param name="event">Event for deferred processing</param>
-        void AddWithoutSend(T @event);
-
-        /// <summary>
-        /// Adding a set of events without sending for processing
-        /// </summary>
-        /// <param name="events">Events for deferred processing</param>
-        void AddWithoutSend(IEnumerable<T> events);
+        void Add(IEnumerable<T> events, bool sendEvents = true);
 
         /// <summary>
         /// Sending available events to the delegate for on-demand processing

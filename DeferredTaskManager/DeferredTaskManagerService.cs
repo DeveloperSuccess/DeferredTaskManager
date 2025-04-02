@@ -13,12 +13,12 @@ namespace DTM
     /// <inheritdoc/>
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
-        private readonly ReaderWriterLockSlim _lockBag = new ReaderWriterLockSlim();
-        private readonly object _locksIsStarted = new object();
+        private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
+        private readonly object _startLock = new object();
         private readonly PubSub _pubSub = new PubSub();
 
         private ICollectionStrategy<T> _collectionStrategy = default!;
-        private DeferredTaskManagerOptions<T> _dtmOptions = default!;
+        private DeferredTaskManagerOptions<T> _options = default!;
         private bool _isStarted = false;
 
         /// <inheritdoc/>
@@ -28,107 +28,45 @@ namespace DTM
         public int FreePoolCount => _pubSub.SubscribersCount;
 
         /// <inheritdoc/>
-        public int EmployedPoolCount => _dtmOptions.PoolSize - _pubSub.SubscribersCount;
+        public int EmployedPoolCount => _options.PoolSize - _pubSub.SubscribersCount;
 
         /// <inheritdoc/>
-        public virtual void Add(T @event)
+        public virtual void Add(T @event, bool sendEvents = true)
         {
-            _lockBag.EnterReadLock();
-
-            try
+            ExecuteWithReadLock(() =>
             {
                 _collectionStrategy.Add(@event);
-            }
-            finally
-            {
-                _lockBag.ExitReadLock();
-            }
+            });
 
-            _pubSub.SendEvents();
+            if (sendEvents)
+                _pubSub.SendEvents();
         }
 
         /// <inheritdoc/>
-        public virtual void Add(IEnumerable<T> events)
+        public virtual void Add(IEnumerable<T> events, bool sendEvents = true)
         {
-            _lockBag.EnterReadLock();
-
-            try
+            ExecuteWithReadLock(() =>
             {
                 foreach (var ev in events)
                     _collectionStrategy.Add(ev);
-            }
-            finally
-            {
-                _lockBag.ExitReadLock();
-            }
+            });
 
-            _pubSub.SendEvents();
+            if (sendEvents)
+                _pubSub.SendEvents();
         }
 
         /// <inheritdoc/>
-        public virtual void AddWithoutSend(T @event)
+        public virtual Task StartAsync(DeferredTaskManagerOptions<T> options, CancellationToken cancellationToken = default)
         {
-            _lockBag.EnterReadLock();
+            EnsureNotStarted();
+            ValidateOptions(options);
 
-            try
-            {
-                _collectionStrategy.Add(@event);
-            }
-            finally
-            {
-                _lockBag.ExitReadLock();
-            }
-        }
+            _options = options;
+            InitializeCollectionStrategy();
 
-        /// <inheritdoc/>
-        public virtual void AddWithoutSend(IEnumerable<T> events)
-        {
-            _lockBag.EnterReadLock();
+            var tasks = CreateBackgroundTasks(cancellationToken);
 
-            try
-            {
-                foreach (var ev in events)
-                    _collectionStrategy.Add(ev);
-            }
-            finally
-            {
-                _lockBag.ExitReadLock();
-            }
-        }
-
-        /// <inheritdoc/>
-        public virtual async Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default)
-        {
-            lock (_locksIsStarted)
-            {
-                if (_isStarted) return;
-                _isStarted = true;
-            }
-
-            _dtmOptions = deferredTaskManagerOptions ?? throw new ArgumentNullException(nameof(deferredTaskManagerOptions));
-
-            var context = new ValidationContext(deferredTaskManagerOptions, serviceProvider: null, items: null);
-
-            Validator.ValidateObject(deferredTaskManagerOptions, context, true);
-
-            _collectionStrategy = _dtmOptions.CollectionType switch
-            {
-                CollectionType.Bag => new BagStrategy<T>(),
-                CollectionType.Queue => new QueueStrategy<T>(),
-                _ => throw new ArgumentException("Unacceptable collection type"),
-            };
-
-            var taskPool = new List<Task>();
-
-            for (int i = 0; i < _dtmOptions.PoolSize; i++)
-            {
-                taskPool.Add(SenderAsync(cancellationToken));
-            }
-
-            if (deferredTaskManagerOptions.SendDelayOptions != null)
-                taskPool.Add(StartSendDelay(cancellationToken));
-
-            await Task.WhenAll(taskPool).ConfigureAwait(false);
+            return Task.WhenAll(tasks);
         }
 
         /// <inheritdoc/>
@@ -142,7 +80,7 @@ namespace DTM
         {
             List<T> result;
 
-            _lockBag.EnterWriteLock();
+            _collectionLock.EnterWriteLock();
 
             try
             {
@@ -152,10 +90,33 @@ namespace DTM
             }
             finally
             {
-                _lockBag.ExitWriteLock();
+                _collectionLock.ExitWriteLock();
             }
 
             return result;
+        }
+
+        private void ExecuteWithReadLock(Action action)
+        {
+            _collectionLock.EnterReadLock();
+
+            try
+            {
+                action();
+            }
+            finally
+            {
+                _collectionLock.ExitReadLock();
+            }
+        }
+
+        private void EnsureNotStarted()
+        {
+            lock (_startLock)
+            {
+                if (_isStarted) throw new Exception($"{nameof(DeferredTaskManagerService<T>)} has already been launched.");
+                _isStarted = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -163,11 +124,11 @@ namespace DTM
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (!_dtmOptions.SendDelayOptions.ConsiderDifference)
+                if (!_options.SendDelayOptions.ConsiderDifference)
                 {
                     _pubSub.SendEvents();
 
-                    await Task.Delay((_dtmOptions.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay((_options.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
 
                     continue;
                 }
@@ -180,10 +141,46 @@ namespace DTM
 
                 stopWatch.Stop();
 
-                var delay = _dtmOptions.SendDelayOptions.MillisecondsSendDelay - (int)stopWatch.ElapsedMilliseconds;
+                var delay = _options.SendDelayOptions.MillisecondsSendDelay - (int)stopWatch.ElapsedMilliseconds;
 
                 await Task.Delay(delay > 0 ? delay : 0, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private void ValidateOptions(DeferredTaskManagerOptions<T> options)
+        {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            var context = new ValidationContext(options, serviceProvider: null, items: null);
+            Validator.ValidateObject(options, context, true);
+        }
+
+        private void InitializeCollectionStrategy()
+        {
+            _collectionStrategy = _options.CollectionType switch
+            {
+                CollectionType.Bag => new BagStrategy<T>(),
+                CollectionType.Queue => new QueueStrategy<T>(),
+                _ => throw new ArgumentException("Unacceptable collection type"),
+            };
+        }
+
+        private IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
+        {
+            var tasks = new List<Task>();
+
+            for (int i = 0; i < _options.PoolSize; i++)
+            {
+                tasks.Add(SenderAsync(cancellationToken));
+            }
+
+            if (_options.SendDelayOptions != null)
+            {
+                tasks.Add(StartSendDelay(cancellationToken));
+            }
+
+            return tasks;
         }
 
         private async Task SenderAsync(CancellationToken cancellationToken)
@@ -214,7 +211,7 @@ namespace DTM
 
                 if (events.Count == 0) continue;
 
-                await SendEventsAsync(events, _dtmOptions.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
+                await SendEventsAsync(events, _options.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -222,21 +219,21 @@ namespace DTM
         {
             try
             {
-                await _dtmOptions.TaskFactory(events, cancellationToken).ConfigureAwait(false);
+                await _options.TaskFactory(events, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 if (retryCount == 0)
                 {
-                    if (_dtmOptions.RetryOptions.TaskFactoryRetryExhausted != null)
+                    if (_options.RetryOptions.TaskFactoryRetryExhausted != null)
                     {
-                        await _dtmOptions.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                        await _options.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
                     }
 
                     return;
                 }
 
-                await Task.Delay(_dtmOptions.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(_options.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
                 await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
             }
