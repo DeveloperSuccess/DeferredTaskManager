@@ -34,7 +34,7 @@ Func<List<string>, CancellationToken, Task> taskDelegateRetryExhausted = async (
 
 var dtmOptions = new DeferredTaskManagerOptions<string>
 {
-    TaskFactory = taskDelegate,
+    EventConsumer = taskDelegate,
     PoolSize = 1,
     CollectionType = CollectionType.Queue,
     SendDelayOptions = new SendDelayOptions()
@@ -46,7 +46,7 @@ var dtmOptions = new DeferredTaskManagerOptions<string>
     {
         RetryCount = 3,
         MillisecondsRetryDelay = 10000,
-        TaskFactoryRetryExhausted = taskDelegateRetryExhausted
+        EventConsumerRetryExhausted = taskDelegateRetryExhausted
     }
 };
 

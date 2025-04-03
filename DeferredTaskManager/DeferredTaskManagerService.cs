@@ -42,7 +42,7 @@ namespace DTM
 
             ValidateOptions(options);
 
-            _eventStorage = new DefaultEventStorage<T>(options.CollectionType, () => SendEvents());
+            InitializingFields(options);
 
             var tasks = CreateBackgroundTasks(cancellationToken);
 
@@ -90,8 +90,12 @@ namespace DTM
 
             var context = new ValidationContext(options, serviceProvider: null, items: null);
             Validator.ValidateObject(options, context, true);
+        }
 
+        private void InitializingFields(DeferredTaskManagerOptions<T> options)
+        {
             _options = options;
+            _eventStorage = new DefaultEventStorage<T>(options.CollectionType, () => SendEvents());
         }
 
         private IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
@@ -126,7 +130,6 @@ namespace DTM
                     catch
                     {
                         _pubSub.Unsubscribe(subscriberKey);
-
                         continue;
                     }
                 }
@@ -136,7 +139,6 @@ namespace DTM
                 }
 
                 var events = GetEventsAndClearStorage();
-
                 if (events.Count == 0) continue;
 
                 await SendEventsAsync(events, _options.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
@@ -147,15 +149,15 @@ namespace DTM
         {
             try
             {
-                await _options.TaskFactory(events, cancellationToken).ConfigureAwait(false);
+                await _options.EventConsumer(events, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 if (retryCount == 0)
                 {
-                    if (_options.RetryOptions.TaskFactoryRetryExhausted != null)
+                    if (_options.RetryOptions.EventConsumerRetryExhausted != null)
                     {
-                        await _options.RetryOptions.TaskFactoryRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                        await _options.RetryOptions.EventConsumerRetryExhausted(events, cancellationToken).ConfigureAwait(false);
                     }
 
                     return;

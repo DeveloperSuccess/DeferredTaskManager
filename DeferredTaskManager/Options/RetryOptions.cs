@@ -27,6 +27,6 @@ namespace DTM
         /// <summary>
         /// An error handling delegate that will trigger when the specified number of retries is exhausted
         /// </summary>
-        public Func<List<T>, CancellationToken, Task>? TaskFactoryRetryExhausted { get; set; } = null;
+        public Func<List<T>, CancellationToken, Task>? EventConsumerRetryExhausted { get; set; } = null;
     }
 }
