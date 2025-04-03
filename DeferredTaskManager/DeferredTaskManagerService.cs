@@ -40,7 +40,7 @@ namespace DTM
         {
             EnsureNotStarted();
 
-            ValidateOptions(options);            
+            ValidateOptions(options);
 
             _eventStorage = new DefaultEventStorage<T>(options.CollectionType, () => SendEvents());
 
@@ -57,14 +57,11 @@ namespace DTM
                 if (!_options.SendDelayOptions.ConsiderDifference)
                 {
                     SendEvents();
-
                     await Task.Delay((_options.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
-
                     continue;
                 }
 
                 Stopwatch stopWatch = new Stopwatch();
-
                 stopWatch.Start();
 
                 SendEvents();
