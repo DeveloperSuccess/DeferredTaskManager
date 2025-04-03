@@ -16,12 +16,14 @@ namespace DTM
         /// Adding an event to be sent for processing
         /// </summary>
         /// <param name="event">Event for deferred processing</param>
+        /// <param name="sendEvents">Sending events to the delegate for processing</param>
         void Add(T @event, bool sendEvents = true);
 
         /// <summary>
         /// Adding a collection of events to be sent for processing
         /// </summary>
         /// <param name="events">Events for deferred processing</param>
+        /// <param name="sendEvents">Sending events to the delegate for processing</param>
         void Add(IEnumerable<T> events, bool sendEvents = true);
 
         /// <summary>
@@ -33,7 +35,11 @@ namespace DTM
         /// <summary>
         /// Number of unprocessed events
         /// </summary>
-        int Count { get; }    
+        int Count { get; }
+
+        /// <summary>
+        /// Returns a value indicating whether the event storage is empty
+        /// </summary>
         bool IsEmpty { get; }
     }
 }

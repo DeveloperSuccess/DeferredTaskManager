@@ -17,8 +17,15 @@ namespace DTM
         /// <inheritdoc/>
         public int Count => _collectionStrategy.Count;
 
+        /// <inheritdoc/>
         public bool IsEmpty => _collectionStrategy.IsEmpty;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="sendEventsSignal"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public DefaultEventStorage(CollectionType type, Action sendEventsSignal)
         {
             _sendEventsSignal = sendEventsSignal ?? throw new ArgumentNullException(nameof(sendEventsSignal));

@@ -14,11 +14,6 @@ namespace Test
 
         bool _start = false;
 
-        internal TestProcess()
-        {
-
-        }
-
         internal async Task StartTest(IDeferredTaskManagerService<string> manager, DeferredTaskManagerOptions<string> deferredTaskManagerOptions)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));

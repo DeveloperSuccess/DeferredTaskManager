@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
+    /// <summary>
+    /// Settings for retries in case of exceptions
+    /// </summary>
+    /// <typeparamref name="T"/>
     public class RetryOptions<T>
     {
         /// <summary>

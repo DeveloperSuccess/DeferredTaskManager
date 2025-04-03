@@ -1,5 +1,8 @@
 ﻿namespace DTM
 {
+    /// <summary>
+    /// Acceptable collection types for use in event storage
+    /// </summary>
     public enum CollectionType
     {
         /// <summary>

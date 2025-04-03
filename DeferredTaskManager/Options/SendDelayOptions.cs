@@ -2,6 +2,10 @@
 
 namespace DTM
 {
+    /// <summary>
+    /// Options up the processing of added events after a certain time interval with the 
+    /// possibility of variable deducting the time of the previous operation
+    /// </summary>
     public class SendDelayOptions
     {
         /// <summary>
