@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace DTM
@@ -10,20 +9,8 @@ namespace DTM
     /// which makes this approach more reactive but less resource-intensive.
     /// </summary>
     /// <typeparamref name="T"></typeparamref>
-    public interface IDeferredTaskManagerService<T>
+    public interface IDeferredTaskManagerService<T> : IEventStorage<T>
     {
-        /// <summary>
-        /// Adding an event to be sent for processing
-        /// </summary>
-        /// <param name="event">Event for deferred processing</param>
-        void Add(T @event, bool sendEvents = true);
-
-        /// <summary>
-        /// Adding a collection of events to be sent for processing
-        /// </summary>
-        /// <param name="events">Events for deferred processing</param>
-        void Add(IEnumerable<T> events, bool sendEvents = true);
-
         /// <summary>
         /// Sending available events to the delegate for on-demand processing
         /// </summary>
@@ -35,17 +22,6 @@ namespace DTM
         /// <paramref name="deferredTaskManagerOptions"/>
         /// <paramref name="cancellationToken"/>
         Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Retrieves collected events with further storage cleanup
-        /// </summary>
-        /// <returns>Collected events</returns>
-        List<T> GetEventsAndClearStorage();
-
-        /// <summary>
-        /// Number of unprocessed events
-        /// </summary>
-        int Count { get; }
 
         /// <summary>
         /// Number of free runners in the pool

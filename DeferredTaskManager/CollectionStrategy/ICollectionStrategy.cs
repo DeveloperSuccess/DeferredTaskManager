@@ -2,7 +2,7 @@
 
 namespace DTM.CollectionStrategy
 {
-    internal interface ICollectionStrategy<T>
+    public interface ICollectionStrategy<T>
     {
         void Add(T item);
         IEnumerable<T> GetItems();

@@ -7,14 +7,16 @@ Func<List<string>, CancellationToken, Task> taskDelegate = async (events, cancel
 {
     try
     {
+        Thread.Sleep(1000);
+
+        await Task.Delay(1000, cancellationToken);        
+
         var test = string.Join(",", events);
 
         testProcess.AddNumberCompletedEvents(events.Count);
 
         // Тестовое исключение
-        // throw new Exception("Тестовое исключение");
-
-        await Task.Delay(10, cancellationToken);
+        // throw new Exception("Тестовое исключение");        
     }
     catch
     {
