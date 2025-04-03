@@ -39,9 +39,8 @@ namespace DTM
         public virtual Task StartAsync(DeferredTaskManagerOptions<T> options, CancellationToken cancellationToken = default)
         {
             EnsureNotStarted();
-            ValidateOptions(options);
 
-            _options = options;
+            ValidateOptions(options);            
 
             _eventStorage = new DefaultEventStorage<T>(options.CollectionType, () => SendEvents());
 
@@ -94,6 +93,8 @@ namespace DTM
 
             var context = new ValidationContext(options, serviceProvider: null, items: null);
             Validator.ValidateObject(options, context, true);
+
+            _options = options;
         }
 
         private IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
