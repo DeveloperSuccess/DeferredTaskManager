@@ -10,7 +10,7 @@ namespace Test
         const int _itemCount = 500000;
 
         private readonly ConcurrentBag<int> _numberCompletedEvents = [];
-        private IDeferredTaskManagerService<string> _manager;
+        private IDeferredTaskManagerService<string> _manager = default!;
 
         bool _start = false;
 
