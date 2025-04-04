@@ -95,7 +95,15 @@ namespace DTM
         private void InitializingFields(DeferredTaskManagerOptions<T> options)
         {
             _options = options;
-            _eventStorage = new DefaultEventStorage<T>(options.CollectionType);
+
+            if (options.CustomEventStorage != null)
+            {
+                _eventStorage = options.CustomEventStorage;
+            }
+            else
+            {
+                _eventStorage = new DefaultEventStorage<T>(options.CollectionType);
+            }
         }
 
         private IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)

@@ -35,6 +35,11 @@ namespace DTM
         public CollectionType CollectionType { get; set; } = CollectionType.Queue;
 
         /// <summary>
+        /// Custom Event Storage
+        /// </summary>
+        public IEventStorage<T>? CustomEventStorage { get; set; }
+
+        /// <summary>
         /// Options up the processing of added events after a certain time interval with the 
         /// possibility of variable deducting the time of the previous operation
         /// </summary>
