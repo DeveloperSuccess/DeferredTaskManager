@@ -23,9 +23,9 @@ namespace DTM
         /// <inheritdoc/>
         public bool IsEmpty => _eventStorage.IsEmpty;
         /// <inheritdoc/>
-        public virtual void Add(T @event, bool sendEvents = true) => _eventStorage.Add(@event, sendEvents);
+        public virtual void Add(T @event, bool sendEvents = true) => Add(() => _eventStorage.Add(@event), sendEvents);
         /// <inheritdoc/>
-        public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => _eventStorage.Add(events, sendEvents);
+        public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
         /// <inheritdoc/>
         public int FreePoolCount => _pubSub.SubscribersCount;
         /// <inheritdoc/>
@@ -95,7 +95,7 @@ namespace DTM
         private void InitializingFields(DeferredTaskManagerOptions<T> options)
         {
             _options = options;
-            _eventStorage = new DefaultEventStorage<T>(options.CollectionType, () => SendEvents());
+            _eventStorage = new DefaultEventStorage<T>(options.CollectionType);
         }
 
         private IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
@@ -168,5 +168,13 @@ namespace DTM
                 await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
             }
         }
-    }
+
+        private void Add(Action action, bool sendEvents)
+        {
+            action();
+
+            if (sendEvents)
+                SendEvents();
+        }
+    };
 }

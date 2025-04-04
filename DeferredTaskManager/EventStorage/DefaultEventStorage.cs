@@ -10,7 +10,6 @@ namespace DTM
     public class DefaultEventStorage<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
-        private readonly Action _sendEventsSignal;
 
         private ICollectionStrategy<T> _collectionStrategy = default!;
 
@@ -24,11 +23,9 @@ namespace DTM
         /// 
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="sendEventsSignal"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public DefaultEventStorage(CollectionType type, Action sendEventsSignal)
+        public DefaultEventStorage(CollectionType type)
         {
-            _sendEventsSignal = sendEventsSignal ?? throw new ArgumentNullException(nameof(sendEventsSignal));
             InitializeCollectionStrategy(type);
         }
 
@@ -39,9 +36,6 @@ namespace DTM
             {
                 _collectionStrategy.Add(@event);
             });
-
-            if (sendEvents)
-                _sendEventsSignal();
         }
 
         /// <inheritdoc/>
@@ -52,9 +46,6 @@ namespace DTM
                 foreach (var ev in events)
                     _collectionStrategy.Add(ev);
             });
-
-            if (sendEvents)
-                _sendEventsSignal();
         }
 
         /// <inheritdoc/>
