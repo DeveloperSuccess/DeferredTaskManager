@@ -37,7 +37,12 @@ namespace DTM
         /// <summary>
         /// Custom Event Storage
         /// </summary>
-        public IEventStorage<T>? CustomEventStorage { get; set; }
+        public IEventStorage<T>? EventStorageCustom { get; set; }
+
+        /// <summary>
+        /// Custom Event Sender
+        /// </summary>
+        public IEventSender<T>? EventSenderCustom { get; set; }
 
         /// <summary>
         /// Options up the processing of added events after a certain time interval with the 

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    internal class PubSub
+    public class PubSub : IPubSub
     {
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<bool>> _subscribers = new ConcurrentDictionary<Guid, TaskCompletionSource<bool>>();
         private readonly object _lockSubscribers = new object();
 
-        internal int SubscribersCount => _subscribers.Count;
+        public int SubscribersCount => _subscribers.Count;
 
-        internal void SendEvents()
+        public void SendEvents()
         {
             var task = new TaskCompletionSource<bool>();
 
@@ -32,7 +32,7 @@ namespace DTM
             task?.TrySetResult(true);
         }
 
-        internal void Subscribe(out Guid subscriberKey, out Task<bool> task)
+        public void Subscribe(out Guid subscriberKey, out Task<bool> task)
         {
             subscriberKey = Guid.NewGuid();
 
@@ -43,7 +43,7 @@ namespace DTM
             task = taskCompletionSource.Task;
         }
 
-        internal void Unsubscribe(Guid subscriberKey)
+        public void Unsubscribe(Guid subscriberKey)
         {
             lock (_lockSubscribers)
             {

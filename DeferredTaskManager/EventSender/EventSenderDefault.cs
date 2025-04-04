@@ -1,0 +1,125 @@
+﻿using DTM.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace DTM
+{
+    /// <inheritdoc/>
+    public class EventSenderDefault<T> : IEventSender<T>
+    {
+        private readonly IPubSub _pubSub;
+        private readonly DeferredTaskManagerOptions<T> _options;
+        private readonly IEventStorage<T> _eventStorage;
+
+        public EventSenderDefault(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IPubSub pubSub)
+        {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _eventStorage = eventStorage ?? throw new ArgumentNullException(nameof(eventStorage));
+            _pubSub = pubSub ?? throw new ArgumentNullException(nameof(pubSub));
+        }
+
+        public IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
+        {
+            var tasks = new List<Task>();
+
+            for (int i = 0; i < _options.PoolSize; i++)
+            {
+                tasks.Add(SenderAsync(cancellationToken));
+            }
+
+            if (_options.SendDelayOptions != null)
+            {
+                tasks.Add(StartSendDelay(cancellationToken));
+            }
+
+            return tasks;
+        }
+
+        public void SendEvents()
+        {
+            _pubSub.SendEvents();
+        }
+
+        /// <inheritdoc/>
+        private async Task StartSendDelay(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (!_options.SendDelayOptions.ConsiderDifference)
+                {
+                    SendEvents();
+                    await Task.Delay((_options.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                SendEvents();
+
+                stopWatch.Stop();
+
+                var delay = _options.SendDelayOptions.MillisecondsSendDelay - (int)stopWatch.ElapsedMilliseconds;
+
+                await Task.Delay(delay > 0 ? delay : 0, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task SenderAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                _pubSub.Subscribe(out Guid subscriberKey, out Task<bool> task);
+
+                if (_eventStorage.IsEmpty)
+                {
+                    try
+                    {
+                        await task.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        _pubSub.Unsubscribe(subscriberKey);
+                        continue;
+                    }
+                }
+                else
+                {
+                    _pubSub.Unsubscribe(subscriberKey);
+                }
+
+                var events = _eventStorage.GetEventsAndClearStorage();
+                if (events.Count == 0) continue;
+
+                await SendEventsAsync(events, _options.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _options.EventConsumer(events, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                if (retryCount == 0)
+                {
+                    if (_options.RetryOptions.EventConsumerRetryExhausted != null)
+                    {
+                        await _options.RetryOptions.EventConsumerRetryExhausted(events, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return;
+                }
+
+                await Task.Delay(_options.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+
+                await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
+            }
+        }
+    };
+}

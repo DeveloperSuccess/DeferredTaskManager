@@ -7,7 +7,7 @@ using System.Threading;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class DefaultEventStorage<T> : IEventStorage<T>
+    public class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
 
@@ -24,7 +24,7 @@ namespace DTM
         /// </summary>
         /// <param name="type"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public DefaultEventStorage(CollectionType type)
+        public EventStorageDefault(CollectionType type)
         {
             InitializeCollectionStrategy(type);
         }
