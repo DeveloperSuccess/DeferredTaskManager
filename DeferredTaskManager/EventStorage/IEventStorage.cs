@@ -41,5 +41,6 @@ namespace DTM
         /// Returns a value indicating whether the event storage is empty
         /// </summary>
         bool IsEmpty { get; }
+        void InitializeCollectionStrategy(CollectionType type);
     }
 }

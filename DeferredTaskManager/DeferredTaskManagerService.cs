@@ -10,12 +10,20 @@ namespace DTM
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly object _startLock = new object();
-        private readonly IPubSub _pubSub = new PubSub();
+        private readonly IPoolPubSub _pubSub;
+        private readonly IEventStorage<T> _eventStorage;
+        private readonly IEventSender<T> _eventSender;
 
-        private DeferredTaskManagerOptions<T> _options = default!;
-        private IEventStorage<T> _eventStorage = default!;
-        private IEventSender<T> _eventSender = default!;
+        private readonly DeferredTaskManagerOptions<T> _options;
         private bool _isStarted = false;
+
+        public DeferredTaskManagerService(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub pubSub)
+        {
+            _options = options;
+            _eventStorage = eventStorage;
+            _eventSender = eventSender;
+            _pubSub = pubSub;
+        }
 
         #region Implemented methods IEventStorage
         /// <inheritdoc/>
@@ -73,25 +81,8 @@ namespace DTM
 
         private void InitializingFields(DeferredTaskManagerOptions<T> options)
         {
-            _options = options;
-
-            if (options.EventStorageCustom != null)
-            {
-                _eventStorage = options.EventStorageCustom;
-            }
-            else
-            {
-                _eventStorage = new EventStorageDefault<T>(options.CollectionType);
-            }
-
-            if (options.EventSenderCustom != null)
-            {
-                _eventSender = options.EventSenderCustom;
-            }
-            else
-            {
-                _eventSender = new EventSenderDefault<T>(options, _eventStorage, _pubSub);
-            }
+            _options.Update(options);
+            _eventStorage.InitializeCollectionStrategy(options.CollectionType);
         }
 
         private void Add(Action action, bool sendEvents)
@@ -100,6 +91,11 @@ namespace DTM
 
             if (sendEvents)
                 SendEvents();
+        }
+
+        public void InitializeCollectionStrategy(CollectionType type)
+        {
+            throw new NotImplementedException();
         }
     };
 }

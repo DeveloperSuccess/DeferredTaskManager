@@ -6,11 +6,15 @@ namespace DTM
     {
         public static IServiceCollection AddDeferredTaskManager<T>(this IServiceCollection services)
         {
-            services.AddScoped<IPubSub, PubSub>();
+            services.AddSingleton<DeferredTaskManagerOptions<T>, DeferredTaskManagerOptions<T>>();
 
-            services.AddScoped<IEventStorage<T>, EventStorageDefault<T>>();
+            services.AddSingleton<IPoolPubSub, PoolPubSub>();
 
-            services.AddScoped<IEventSender<T>, EventSenderDefault<T>>();
+            services.AddSingleton<IEventStorage<T>, EventStorageDefault<T>>();
+
+            services.AddSingleton<IEventSender<T>, EventSenderDefault<T>>();
+
+            services.AddSingleton<IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>();
 
             return services;
         }

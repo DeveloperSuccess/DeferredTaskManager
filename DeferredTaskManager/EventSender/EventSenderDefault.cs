@@ -10,11 +10,11 @@ namespace DTM
     /// <inheritdoc/>
     public class EventSenderDefault<T> : IEventSender<T>
     {
-        private readonly IPubSub _pubSub;
+        private readonly IPoolPubSub _pubSub;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
-        public EventSenderDefault(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IPubSub pubSub)
+        public EventSenderDefault(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _eventStorage = eventStorage ?? throw new ArgumentNullException(nameof(eventStorage));

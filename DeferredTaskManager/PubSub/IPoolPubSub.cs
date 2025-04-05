@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    public interface IPubSub
+    public interface IPoolPubSub
     {
         int SubscribersCount { get; }
         void SendEvents();

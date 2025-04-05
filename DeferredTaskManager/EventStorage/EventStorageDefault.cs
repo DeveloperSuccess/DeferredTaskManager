@@ -1,4 +1,5 @@
 ﻿using DTM.CollectionStrategy;
+using DTM.EventStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,27 +8,15 @@ using System.Threading;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class EventStorageDefault<T> : IEventStorage<T>
+    public class EventStorageDefault<T> : EventStorageAbstract<T>, IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
-
-        private ICollectionStrategy<T> _collectionStrategy = default!;
 
         /// <inheritdoc/>
         public int Count => _collectionStrategy.Count;
 
         /// <inheritdoc/>
         public bool IsEmpty => _collectionStrategy.IsEmpty;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public EventStorageDefault(CollectionType type)
-        {
-            InitializeCollectionStrategy(type);
-        }
 
         /// <inheritdoc/>
         public virtual void Add(T @event, bool sendEvents = true)
@@ -83,14 +72,6 @@ namespace DTM
             }
         }
 
-        private void InitializeCollectionStrategy(CollectionType type)
-        {
-            _collectionStrategy = type switch
-            {
-                CollectionType.Bag => new BagStrategy<T>(),
-                CollectionType.Queue => new QueueStrategy<T>(),
-                _ => throw new ArgumentException("Unacceptable collection type"),
-            };
-        }
+        
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,16 +36,6 @@ namespace DTM
         public CollectionType CollectionType { get; set; } = CollectionType.Queue;
 
         /// <summary>
-        /// Custom Event Storage
-        /// </summary>
-        public IEventStorage<T>? EventStorageCustom { get; set; }
-
-        /// <summary>
-        /// Custom Event Sender
-        /// </summary>
-        public IEventSender<T>? EventSenderCustom { get; set; }
-
-        /// <summary>
         /// Options up the processing of added events after a certain time interval with the 
         /// possibility of variable deducting the time of the previous operation
         /// </summary>
@@ -55,5 +46,29 @@ namespace DTM
         /// </summary>
         [Required]
         public RetryOptions<T> RetryOptions { get; set; } = new RetryOptions<T>();
+
+        public void Update(DeferredTaskManagerOptions<T> source)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+
+            Type targetType = this.GetType();
+            Type sourceType = source.GetType();
+
+            if (targetType != sourceType)
+            {
+                throw new ArgumentException($"Типы не совпадают: target = {targetType.FullName}, source = {sourceType.FullName}");
+            }
+
+            PropertyInfo[] properties = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (PropertyInfo property in properties)
+            {
+                if (property.CanRead && property.CanWrite)
+                {
+                    object sourceValue = property.GetValue(source);
+                    property.SetValue(this, sourceValue);
+                }
+            }
+        }
     }
 }
