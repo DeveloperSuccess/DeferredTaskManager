@@ -1,5 +1,5 @@
 ﻿using DTM.CollectionStrategy;
-using DTM.EventStorage;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +8,23 @@ using System.Threading;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class EventStorageDefault<T> : EventStorageAbstract<T>, IEventStorage<T>
+    public class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
+        private readonly DeferredTaskManagerOptions<T> _options;
+
+        private readonly ICollectionStrategy<T> _collectionStrategy;
+
+        public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options)
+        {
+            _options = options.Value;
+            _collectionStrategy = _options.CollectionType switch
+            {
+                CollectionType.Bag => new BagStrategy<T>(),
+                CollectionType.Queue => new QueueStrategy<T>(),
+                _ => throw new ArgumentException("Unacceptable collection type"),
+            };
+        }
 
         /// <inheritdoc/>
         public int Count => _collectionStrategy.Count;
@@ -71,7 +85,5 @@ namespace DTM
                 _collectionLock.ExitReadLock();
             }
         }
-
-        
     }
 }

@@ -19,7 +19,7 @@ namespace DTM
         /// You can also handle exceptions in the delegate.
         /// </summary>
         [Required]
-        public Func<List<T>, CancellationToken, Task> EventConsumer { get; set; }
+        internal Func<List<T>, CancellationToken, Task> EventConsumer { get; set; }
 
         /// <summary>
         /// The number of runners available to handle incoming events. The pool size setting is variable and is 
@@ -46,29 +46,5 @@ namespace DTM
         /// </summary>
         [Required]
         public RetryOptions<T> RetryOptions { get; set; } = new RetryOptions<T>();
-
-        public void Update(DeferredTaskManagerOptions<T> source)
-        {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-
-            Type targetType = this.GetType();
-            Type sourceType = source.GetType();
-
-            if (targetType != sourceType)
-            {
-                throw new ArgumentException($"Типы не совпадают: target = {targetType.FullName}, source = {sourceType.FullName}");
-            }
-
-            PropertyInfo[] properties = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (PropertyInfo property in properties)
-            {
-                if (property.CanRead && property.CanWrite)
-                {
-                    object sourceValue = property.GetValue(source);
-                    property.SetValue(this, sourceValue);
-                }
-            }
-        }
     }
 }

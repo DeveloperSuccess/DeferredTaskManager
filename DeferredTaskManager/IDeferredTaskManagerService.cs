@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DTM
@@ -19,9 +21,17 @@ namespace DTM
         /// <summary>
         /// Launching Deferred Task Manager
         /// </summary>
-        /// <paramref name="deferredTaskManagerOptions"/>
         /// <paramref name="cancellationToken"/>
-        Task StartAsync(DeferredTaskManagerOptions<T> deferredTaskManagerOptions, CancellationToken cancellationToken = default);
+        Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Launching Deferred Task Manager
+        /// </summary>
+        /// <paramref name="cancellationToken"/>
+        Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Number of free runners in the pool

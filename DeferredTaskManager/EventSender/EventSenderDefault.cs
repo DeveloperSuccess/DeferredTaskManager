@@ -1,4 +1,5 @@
 ﻿using DTM.Extensions;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,11 +15,11 @@ namespace DTM
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
-        public EventSenderDefault(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
+        public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _eventStorage = eventStorage ?? throw new ArgumentNullException(nameof(eventStorage));
-            _pubSub = pubSub ?? throw new ArgumentNullException(nameof(pubSub));
+            _options = options.Value;
+            _eventStorage = eventStorage;
+            _pubSub = pubSub;
         }
 
         public IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)

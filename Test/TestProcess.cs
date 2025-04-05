@@ -1,6 +1,7 @@
 ﻿using DTM;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using EventConsumer = System.Func<System.Collections.Generic.List<string>, System.Threading.CancellationToken, System.Threading.Tasks.Task>;
 
 namespace Test
 {
@@ -14,7 +15,7 @@ namespace Test
 
         bool _start = false;
 
-        internal async Task StartTest(IDeferredTaskManagerService<string> manager, DeferredTaskManagerOptions<string> deferredTaskManagerOptions)
+        internal async Task StartTest(IDeferredTaskManagerService<string> manager)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
 
@@ -22,7 +23,9 @@ namespace Test
 
             stopwatch.Start();
 
-            Task.Run(() => _manager.StartAsync(deferredTaskManagerOptions), default);
+            var consumers = GetConsumers();
+
+            Task.Run(() => _manager.StartAsync(consumers.EventConsumer, consumers.EventConsumerRetryExhausted), default);
 
             await AddAsync();
             CountingTotalExecutionTime();
@@ -30,6 +33,40 @@ namespace Test
             stopwatch.Stop();
 
             Console.WriteLine($"Total execution time: {stopwatch.ElapsedMilliseconds} ms, events completed {_numberCompletedEvents.Sum()}");
+        }
+
+        private (EventConsumer EventConsumer, EventConsumer EventConsumerRetryExhausted) GetConsumers()
+        {
+            EventConsumer eventConsumer = async (events, cancellationToken) =>
+            {
+                try
+                {
+                    Thread.Sleep(1000);
+
+                    await Task.Delay(1000, cancellationToken);
+
+                    var test = string.Join(",", events);
+
+                    AddNumberCompletedEvents(events.Count);
+
+                    // Тестовое исключение
+                    // throw new Exception("Тестовое исключение");        
+                }
+                catch
+                {
+                    // Пример обработки исключений (в случае ошибки можно оставить в коллекции выполненные а остальные пойдут в retry)
+                    events.Remove(events.FirstOrDefault());
+
+                    throw new Exception("Sending to retry after exclusion");
+                }
+            };
+
+            EventConsumer eventConsumerRetryExhausted = async (events, cancellationToken) =>
+            {
+                Console.WriteLine("Something went wrong...");
+            };
+
+            return (eventConsumer, eventConsumerRetryExhausted);
         }
 
         async Task AddAsync()

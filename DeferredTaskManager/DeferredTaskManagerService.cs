@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,9 +19,9 @@ namespace DTM
         private readonly DeferredTaskManagerOptions<T> _options;
         private bool _isStarted = false;
 
-        public DeferredTaskManagerService(DeferredTaskManagerOptions<T> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub pubSub)
+        public DeferredTaskManagerService(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub pubSub)
         {
-            _options = options;
+            _options = options.Value;
             _eventStorage = eventStorage;
             _eventSender = eventSender;
             _pubSub = pubSub;
@@ -48,13 +50,25 @@ namespace DTM
         #endregion
 
         /// <inheritdoc/>
-        public virtual Task StartAsync(DeferredTaskManagerOptions<T> options, CancellationToken cancellationToken = default)
+        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            CancellationToken cancellationToken = default) =>
+            Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
+
+        /// <inheritdoc/>
+        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            CancellationToken cancellationToken = default) =>
+            Initializing(eventConsumer, cancellationToken: cancellationToken);
+
+        private Task Initializing(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            CancellationToken cancellationToken = default)
         {
             EnsureNotStarted();
 
-            ValidateOptions(options);
+            ValidateOptions(_options);
 
-            InitializingFields(options);
+            InitializingFields(eventConsumer, eventConsumerRetryExhausted);
 
             var tasks = _eventSender.CreateBackgroundTasks(cancellationToken);
 
@@ -79,10 +93,11 @@ namespace DTM
             Validator.ValidateObject(options, context, true);
         }
 
-        private void InitializingFields(DeferredTaskManagerOptions<T> options)
+        private void InitializingFields(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null)
         {
-            _options.Update(options);
-            _eventStorage.InitializeCollectionStrategy(options.CollectionType);
+            _options.EventConsumer = eventConsumer;
+            _options.RetryOptions.EventConsumerRetryExhausted = eventConsumerRetryExhausted;
         }
 
         private void Add(Action action, bool sendEvents)
@@ -91,11 +106,6 @@ namespace DTM
 
             if (sendEvents)
                 SendEvents();
-        }
-
-        public void InitializeCollectionStrategy(CollectionType type)
-        {
-            throw new NotImplementedException();
         }
     };
 }

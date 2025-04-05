@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace DTM
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddDeferredTaskManager<T>(this IServiceCollection services)
+        public static IServiceCollection AddDeferredTaskManager<T>(this IServiceCollection services, Action<DeferredTaskManagerOptions<T>> configureOptions)
         {
-            services.AddSingleton<DeferredTaskManagerOptions<T>, DeferredTaskManagerOptions<T>>();
+            services.Configure(configureOptions);
 
             services.AddSingleton<IPoolPubSub, PoolPubSub>();
 
