@@ -38,8 +38,8 @@ namespace DTM
             object[] GetConstructorArguments(IServiceProvider serviceProvider, Type type)
             {
                 var constructor = type.GetConstructors()
-                    .OrderByDescending(c => c.GetParameters().Length)
-                    .FirstOrDefault();
+               .FirstOrDefault(c => c.GetCustomAttributes(typeof(ActivatorUtilitiesConstructorAttribute), true).Any())
+                ?? type.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault();
 
                 if (constructor == null)
                 {
