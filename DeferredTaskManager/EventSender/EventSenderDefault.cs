@@ -22,7 +22,7 @@ namespace DTM
             _pubSub = pubSub;
         }
 
-        public IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken)
+        public Task StartBackgroundTasks(CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();
 
@@ -36,17 +36,18 @@ namespace DTM
                 tasks.Add(StartSendDelay(cancellationToken));
             }
 
-            return tasks;
+            return Task.WhenAll(tasks);
         }
 
         public void SendEvents()
         {
             _pubSub.SendEvents();
         }
-
-        
+                
         private async Task StartSendDelay(CancellationToken cancellationToken)
         {
+            if (_options.SendDelayOptions == null) return;
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!_options.SendDelayOptions.ConsiderDifference)

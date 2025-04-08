@@ -19,7 +19,7 @@ namespace DTM
         /// You can also handle exceptions in the delegate.
         /// </summary>
         [Required]
-        internal Func<List<T>, CancellationToken, Task> EventConsumer { get; set; }
+        internal Func<List<T>, CancellationToken, Task> EventConsumer { get; set; } = default!;
 
         /// <summary>
         /// The number of runners available to handle incoming events. The pool size setting is variable and is 

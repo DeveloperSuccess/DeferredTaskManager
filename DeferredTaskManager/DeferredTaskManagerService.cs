@@ -70,9 +70,7 @@ namespace DTM
 
             InitializingFields(eventConsumer, eventConsumerRetryExhausted);
 
-            var tasks = _eventSender.CreateBackgroundTasks(cancellationToken);
-
-            return Task.WhenAll(tasks);
+            return _eventSender.StartBackgroundTasks(cancellationToken);
         }
 
         private void EnsureNotStarted()

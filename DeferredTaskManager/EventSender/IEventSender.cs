@@ -11,10 +11,9 @@ namespace DTM
     public interface IEventSender<T>
     {
         /// <summary>
-        /// Creating background runners
+        /// The task of running background tasks
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>Enumerator of background runners</returns>
-        IEnumerable<Task> CreateBackgroundTasks(CancellationToken cancellationToken);
+        Task StartBackgroundTasks(CancellationToken cancellationToken);
     }
 }
