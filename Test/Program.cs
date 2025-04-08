@@ -16,7 +16,7 @@ Console.ReadKey();
 ServiceProvider GetServiceProvider()
 {
     var services = new ServiceCollection();
-    services.AddDeferredTaskManagerSingleton<string>(options =>
+    services.AddDeferredTaskManager<string>(options =>
     {
         options.PoolSize = Environment.ProcessorCount;
         options.CollectionType = CollectionType.Queue;

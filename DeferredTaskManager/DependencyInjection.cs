@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Data;
 using System.Linq;
 
 namespace DTM
@@ -10,139 +11,71 @@ namespace DTM
     public static class DependencyInjection
     {
         /// <summary>
-        /// Dependency Injection for DeferredTaskManager on Singleton
+        /// Dependency Injection for DeferredTaskManager
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="services">IServiceCollection</param>
         /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
+        /// <param name="lifetime">Service Lifetime</param>
         /// <param name="pubSubType">Overriding the PubSub module</param>
         /// <param name="eventStorageType">Overriding the EventStorage module</param>
         /// <param name="eventSenderType">Overriding the EventSender module</param>
         /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
-        public static IServiceCollection AddDeferredTaskManagerSingleton<T>(
-            this IServiceCollection services,
+        public static IServiceCollection AddDeferredTaskManager<T>(this IServiceCollection services,
             Action<DeferredTaskManagerOptions<T>> configureOptions,
+            ServiceLifetime lifetime = ServiceLifetime.Singleton,
             Type? pubSubType = null,
             Type? eventStorageType = null,
             Type? eventSenderType = null,
             Type? deferredTaskManagerServiceType = null)
         {
-            AddDependencyInjection<T>(
-                services,
-                configureOptions,
-                DIType.Singleton,
-                pubSubType,
-                eventStorageType,
-                eventSenderType,
-                deferredTaskManagerServiceType);
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (configureOptions == null) throw new ArgumentNullException(nameof(configureOptions));
 
-            return services;
-        }
-
-        /// <summary>
-        /// Dependency Injection for DeferredTaskManager on Scoped
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
-        /// <param name="pubSubType">Overriding the PubSub module</param>
-        /// <param name="eventStorageType">Overriding the EventStorage module</param>
-        /// <param name="eventSenderType">Overriding the EventSender module</param>
-        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
-        public static IServiceCollection AddDeferredTaskManagerScoped<T>(
-            this IServiceCollection services,
-            Action<DeferredTaskManagerOptions<T>> configureOptions,
-            Type? pubSubType = null,
-            Type? eventStorageType = null,
-            Type? eventSenderType = null,
-            Type? deferredTaskManagerServiceType = null)
-        {
-            AddDependencyInjection<T>(services,
-                configureOptions, DIType.Scoped,
-                pubSubType, eventStorageType,
-                eventSenderType, deferredTaskManagerServiceType);
-
-            return services;
-        }
-
-        /// <summary>
-        /// Dependency Injection for DeferredTaskManager on Transient
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
-        /// <param name="pubSubType">Overriding the PubSub module</param>
-        /// <param name="eventStorageType">Overriding the EventStorage module</param>
-        /// <param name="eventSenderType">Overriding the EventSender module</param>
-        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
-        public static IServiceCollection AddDeferredTaskManagerTransient<T>(
-            this IServiceCollection services,
-            Action<DeferredTaskManagerOptions<T>> configureOptions,
-            Type? pubSubType = null,
-            Type? eventStorageType = null,
-            Type? eventSenderType = null,
-            Type? deferredTaskManagerServiceType = null)
-        {
-            AddDependencyInjection<T>(services, configureOptions,
-                DIType.Transient, pubSubType,
-                eventStorageType, eventSenderType,
-                deferredTaskManagerServiceType);
-
-            return services;
-        }
-
-        static void AddDependencyInjection<T>(IServiceCollection services, Action<DeferredTaskManagerOptions<T>> configureOptions, DIType dIType,
-            Type? pubSubType = null,
-            Type? eventStorageType = null,
-            Type? eventSenderType = null,
-            Type? deferredTaskManagerServiceType = null)
-        {
             services.Configure(configureOptions);
 
-            Add<T, IPoolPubSub, PoolPubSub>(services, configureOptions, pubSubType, dIType);
+            AddDependencyInjection<T, IPoolPubSub, PoolPubSub>(services, pubSubType, lifetime);
 
-            Add<T, IEventStorage<T>, EventStorageDefault<T>>(services, configureOptions, eventStorageType, dIType);
+            AddDependencyInjection<T, IEventStorage<T>, EventStorageDefault<T>>(services, eventStorageType, lifetime);
 
-            Add<T, IEventSender<T>, EventSenderDefault<T>>(services, configureOptions, eventSenderType, dIType);
+            AddDependencyInjection<T, IEventSender<T>, EventSenderDefault<T>>(services, eventSenderType, lifetime);
 
-            Add<T, IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, configureOptions, deferredTaskManagerServiceType, dIType);
+            AddDependencyInjection<T, IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, deferredTaskManagerServiceType, lifetime);
+
+            return services;
         }
 
-        static void Add<T, TServiceType, TDefaultType>(IServiceCollection services,
-            Action<DeferredTaskManagerOptions<T>> configureOptions,
-            Type? customType, DIType dIType)
+        static void AddDependencyInjection<T, TServiceType, TDefaultType>(IServiceCollection services,
+            Type? customType, ServiceLifetime lifetime)
         {
-            services.Configure(configureOptions);
-
-            switch (dIType)
+            switch (lifetime)
             {
-                case DIType.Singleton:
+                case ServiceLifetime.Singleton:
                     services.AddSingleton(typeof(TServiceType), serviceProvider =>
                     {
-                        return BodyAddDI<TServiceType, TDefaultType>(serviceProvider, customType);
+                        return CreateServiceInstance<TServiceType, TDefaultType>(serviceProvider, customType);
                     });
                     break;
-                case DIType.Scoped:
+                case ServiceLifetime.Scoped:
                     services.AddScoped(typeof(TServiceType), serviceProvider =>
                     {
-                        return BodyAddDI<TServiceType, TDefaultType>(serviceProvider, customType);
+                        return CreateServiceInstance<TServiceType, TDefaultType>(serviceProvider, customType);
                     });
                     break;
-                case DIType.Transient:
+                case ServiceLifetime.Transient:
                     services.AddTransient(typeof(TServiceType), serviceProvider =>
                     {
-                        return BodyAddDI<TServiceType, TDefaultType>(serviceProvider, customType);
+                        return CreateServiceInstance<TServiceType, TDefaultType>(serviceProvider, customType);
                     });
                     break;
             }
         }
 
-        static object BodyAddDI<TServiceType, TDefaultType>(IServiceProvider serviceProvider, Type? customType)
+        static object CreateServiceInstance<TServiceType, TDefaultType>(IServiceProvider serviceProvider, Type? customType)
         {
-            if (customType != null)
-                return Activator.CreateInstance(customType, GetConstructorArguments(serviceProvider, customType));
+            var implementationType = customType ?? typeof(TDefaultType);
 
-            return Activator.CreateInstance(typeof(TDefaultType), GetConstructorArguments(serviceProvider, typeof(TDefaultType)));
+            return Activator.CreateInstance(implementationType, GetConstructorArguments(serviceProvider, implementationType));
         }
 
         static object[] GetConstructorArguments(IServiceProvider serviceProvider, Type type)
