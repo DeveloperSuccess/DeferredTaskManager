@@ -14,7 +14,7 @@ namespace DTM
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
         /// <param name="pubSubType">Overriding the PubSub module</param>
         /// <param name="eventStorageType">Overriding the EventStorage module</param>
         /// <param name="eventSenderType">Overriding the EventSender module</param>
@@ -44,7 +44,7 @@ namespace DTM
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
         /// <param name="pubSubType">Overriding the PubSub module</param>
         /// <param name="eventStorageType">Overriding the EventStorage module</param>
         /// <param name="eventSenderType">Overriding the EventSender module</param>
@@ -70,7 +70,7 @@ namespace DTM
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
         /// <param name="pubSubType">Overriding the PubSub module</param>
         /// <param name="eventStorageType">Overriding the EventStorage module</param>
         /// <param name="eventSenderType">Overriding the EventSender module</param>
