@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    /// <inheritdoc/>
-    public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
+    
+    internal class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly object _startLock = new object();
         private readonly IPoolPubSub _pubSub;
@@ -28,34 +28,34 @@ namespace DTM
         }
 
         #region Implemented methods IEventStorage
-        /// <inheritdoc/>
+        
         public int Count => _eventStorage.Count;
-        /// <inheritdoc/>
+        
         public bool IsEmpty => _eventStorage.IsEmpty;
-        /// <inheritdoc/>
+        
         public virtual void Add(T @event, bool sendEvents = true) => Add(() => _eventStorage.Add(@event), sendEvents);
-        /// <inheritdoc/>
+        
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
-        /// <inheritdoc/>
+        
         public virtual List<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
         #endregion
 
         #region Implemented methods IPubSub
-        /// <inheritdoc/>
+        
         public int FreePoolCount => _pubSub.SubscribersCount;
-        /// <inheritdoc/>
+        
         public virtual void SendEvents() => _pubSub.SendEvents();
-        /// <inheritdoc/>
+        
         public int EmployedPoolCount => _options.PoolSize - _pubSub.SubscribersCount;
         #endregion
 
-        /// <inheritdoc/>
+        
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
 
-        /// <inheritdoc/>
+        
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, cancellationToken: cancellationToken);

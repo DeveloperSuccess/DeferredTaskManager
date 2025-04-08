@@ -7,8 +7,8 @@ using System.Threading;
 
 namespace DTM
 {
-    /// <inheritdoc/>
-    public class EventStorageDefault<T> : IEventStorage<T>
+    
+    internal class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
         private readonly DeferredTaskManagerOptions<T> _options;
@@ -26,13 +26,13 @@ namespace DTM
             };
         }
 
-        /// <inheritdoc/>
+        
         public int Count => _collectionStrategy.Count;
 
-        /// <inheritdoc/>
+        
         public bool IsEmpty => _collectionStrategy.IsEmpty;
 
-        /// <inheritdoc/>
+        
         public virtual void Add(T @event, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -41,7 +41,7 @@ namespace DTM
             });
         }
 
-        /// <inheritdoc/>
+        
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -51,7 +51,7 @@ namespace DTM
             });
         }
 
-        /// <inheritdoc/>
+        
         public virtual List<T> GetEventsAndClearStorage()
         {
             List<T> items;

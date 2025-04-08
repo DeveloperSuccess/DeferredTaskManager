@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    /// <inheritdoc/>
-    public class EventSenderDefault<T> : IEventSender<T>
+    
+    internal class EventSenderDefault<T> : IEventSender<T>
     {
         private readonly IPoolPubSub _pubSub;
         private readonly DeferredTaskManagerOptions<T> _options;
@@ -44,7 +44,7 @@ namespace DTM
             _pubSub.SendEvents();
         }
 
-        /// <inheritdoc/>
+        
         private async Task StartSendDelay(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)

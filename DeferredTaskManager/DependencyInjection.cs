@@ -1,12 +1,24 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 
 namespace DTM
 {
+    /// <summary>
+    /// Dependency Injection for DeferredTaskManager
+    /// </summary>
     public static class DependencyInjection
     {
+        /// <summary>
+        /// Dependency Injection for DeferredTaskManager on Singleton
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services">IServiceCollection</param>
+        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="pubSubType">Overriding the PubSub module</param>
+        /// <param name="eventStorageType">Overriding the EventStorage module</param>
+        /// <param name="eventSenderType">Overriding the EventSender module</param>
+        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
         public static IServiceCollection AddDeferredTaskManagerSingleton<T>(
             this IServiceCollection services,
             Action<DeferredTaskManagerOptions<T>> configureOptions,
@@ -15,10 +27,28 @@ namespace DTM
             Type? eventSenderType = null,
             Type? deferredTaskManagerServiceType = null)
         {
-            AddDependencyInjection<T>(services, configureOptions, DIType.Singleton, pubSubType, eventStorageType, eventSenderType, deferredTaskManagerServiceType);
+            AddDependencyInjection<T>(
+                services,
+                configureOptions,
+                DIType.Singleton,
+                pubSubType,
+                eventStorageType,
+                eventSenderType,
+                deferredTaskManagerServiceType);
 
             return services;
         }
+
+        /// <summary>
+        /// Dependency Injection for DeferredTaskManager on Scoped
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services">IServiceCollection</param>
+        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="pubSubType">Overriding the PubSub module</param>
+        /// <param name="eventStorageType">Overriding the EventStorage module</param>
+        /// <param name="eventSenderType">Overriding the EventSender module</param>
+        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
         public static IServiceCollection AddDeferredTaskManagerScoped<T>(
             this IServiceCollection services,
             Action<DeferredTaskManagerOptions<T>> configureOptions,
@@ -27,11 +57,24 @@ namespace DTM
             Type? eventSenderType = null,
             Type? deferredTaskManagerServiceType = null)
         {
-            AddDependencyInjection<T>(services, configureOptions, DIType.Scoped, pubSubType, eventStorageType, eventSenderType, deferredTaskManagerServiceType);
+            AddDependencyInjection<T>(services,
+                configureOptions, DIType.Scoped,
+                pubSubType, eventStorageType,
+                eventSenderType, deferredTaskManagerServiceType);
 
             return services;
         }
 
+        /// <summary>
+        /// Dependency Injection for DeferredTaskManager on Transient
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services">IServiceCollection</param>
+        /// <param name="configureOptions">Параметры для DeferredTaskManager</param>
+        /// <param name="pubSubType">Overriding the PubSub module</param>
+        /// <param name="eventStorageType">Overriding the EventStorage module</param>
+        /// <param name="eventSenderType">Overriding the EventSender module</param>
+        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
         public static IServiceCollection AddDeferredTaskManagerTransient<T>(
             this IServiceCollection services,
             Action<DeferredTaskManagerOptions<T>> configureOptions,
@@ -40,7 +83,10 @@ namespace DTM
             Type? eventSenderType = null,
             Type? deferredTaskManagerServiceType = null)
         {
-            AddDependencyInjection<T>(services, configureOptions, DIType.Transient, pubSubType, eventStorageType, eventSenderType, deferredTaskManagerServiceType);
+            AddDependencyInjection<T>(services, configureOptions,
+                DIType.Transient, pubSubType,
+                eventStorageType, eventSenderType,
+                deferredTaskManagerServiceType);
 
             return services;
         }
@@ -62,7 +108,9 @@ namespace DTM
             Add<T, IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, configureOptions, deferredTaskManagerServiceType, dIType);
         }
 
-        static void Add<T, TServiceType, TDefaultType>(IServiceCollection services, Action<DeferredTaskManagerOptions<T>> configureOptions, Type? customType, DIType dIType)
+        static void Add<T, TServiceType, TDefaultType>(IServiceCollection services,
+            Action<DeferredTaskManagerOptions<T>> configureOptions,
+            Type? customType, DIType dIType)
         {
             services.Configure(configureOptions);
 
