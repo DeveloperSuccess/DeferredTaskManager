@@ -40,14 +40,13 @@ namespace Test
             Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
             {
                 Thread.Sleep(1000);
-
                 await Task.Delay(1000, cancellationToken);
+
+                throw new Exception("Test Exception");
 
                 var test = string.Join(",", events);
 
-                AddNumberCompletedEvents(events.Count);
-                                
-                throw new Exception("Test Exception");
+                AddNumberCompletedEvents(events.Count);     
             };
 
             Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
