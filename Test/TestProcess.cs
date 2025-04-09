@@ -42,7 +42,7 @@ namespace Test
                 Thread.Sleep(1000);
                 await Task.Delay(1000, cancellationToken);
 
-                throw new Exception("Test Exception");
+                //throw new Exception("Test Exception");
 
                 var test = string.Join(",", events);
 
