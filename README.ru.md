@@ -54,36 +54,20 @@ internal sealed class EventManagerService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        // Делегат для кастомной логики, в который поступают события от запущенных раннеров. В качестве примера в нём производится конкатенирование событий,
-        // но возмажна любая другая вариативная обработка или отправка куда-либо.
+       // Делегат для кастомной логики, в который поступают события от запущенных раннеров. В качестве примера в нём производится конкатенирование событий,
+       // но возмажна любая другая вариативная обработка или отправка куда-либо.
        Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
         {
-            try
-            {
-                // Выполнение какой-либо операции
-                Thread.Sleep(1000);
-                await Task.Delay(1000, cancellationToken);
+            // Конкатенация событий
+            var concatenatedEvents = string.Join(",", events);
 
-                // Конкатенация событий
-                var concatenatedEvents = string.Join(",", events);
-
-                /// Любая дальнейшая обработка либо отправка конкатенированных событий
-
-                // Тестовое исключение
-                // throw new Exception("Тестовое исключение");        
-            }
-            catch
-            {    
-                // Пример обработки исключений (в случае обработки событий по отдельности, можнол удлить из в коллекции эвентов выполненные события, тогда незавершенные пойдут в retry)
-                events.Remove(events.FirstOrDefault());
-
-                // Любая кастомная логика (логирование и т. п.)
-            }
+            /// Любая дальнейшая обработка/отправка конкатенированных событий
+            Thread.Sleep(1000);
+            await Task.Delay(1000, cancellationToken);
         };
 
         Func<List<string>, CancellationToken, Task> eventConsumerRetryExhausted = async (events, cancellationToken) =>
         {
-            /// В слу
             Console.WriteLine("Что-то пошло не так...");
         };
 
@@ -97,15 +81,16 @@ internal sealed class EventManagerService : BackgroundService
 ```
 try
 {
-    // Кастомная операция над полученными событиями
+    // Тестовое исключение
+    // throw new Exception("Тестовое исключение");     
 }
 catch (Exception ex)
 {
+    // В случае обработки событий по отдельности,
+    // можно удалить из коллекции эвентов выполненные события, тогда незавершенные пойдут в retry
     events.RemoveRange(successEvents);
 
-    // Можно выдать исключение после удаления успешно завершенных эвентов
-    // или добавить собственные условия
-    throw new Exception("Отправка на повторную попытку после исключения");
+    // Любая кастомная логика (логирование и т. п.)
 }
 ```
 
