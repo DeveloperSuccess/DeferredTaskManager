@@ -13,54 +13,75 @@
 ## Пример использования
 
 ### 1️⃣ Внедрение Singleton зависимости с требуемым типом данных:
-
+В качестве примера зарегистрируем Deferred Task Manager в `DI` с типом `string`.
 ```
-services.AddSingleton<IDeferredTaskManagerService<object>, DeferredTaskManagerService<object>>();
+services.AddDeferredTaskManager<string>(options =>
+{
+    options.PoolSize = Environment.ProcessorCount;
+    options.CollectionType = CollectionType.Queue;
+    options.SendDelayOptions = new SendDelayOptions()
+    {
+        MillisecondsSendDelay = 60000,
+        ConsiderDifference = true
+    };
+    options.RetryOptions = new RetryOptions<string>
+    {
+        RetryCount = 3,
+        MillisecondsRetryDelay = 10000,
+    };
+});
 ```
 
-### 2️⃣ Создание фоновой службы с указанием необходимых параметров:
-
+### 2️⃣ Создание фоновой службы:
+В качестве примера приведено создание фоновой службы для `DeferredTaskManager<string>`, в которой выполняется конкатенирование поступаемых в делегат событий от одного из запущенных раннеров. 
 ```
 internal sealed class EventManagerService : BackgroundService
 {
-    private readonly IDeferredTaskManagerService<object> _deferredTaskManager;
+    private readonly IDeferredTaskManagerService<string> _deferredTaskManager;
 
-    public EventManagerService(IDeferredTaskManagerService<object> deferredTaskManager)
+    public EventManagerService(IDeferredTaskManagerService<string> deferredTaskManager)
     {
-        _deferredTaskManager = deferredTaskManager ?? throw new ArgumentNullException(nameof(deferredTaskManager));
+        _deferredTaskManager = deferredTaskManager;
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Func<List<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
+        // Делегат для кастомной логики, в который поступают события от запущенных раннеров. В качестве примера в нём производится конкатенирование событий,
+        // но возмажна любая другая вариативная обработка или отправка куда-либо.
+       Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
         {
-            return Task.Delay(1000000, cancellationToken);
+            try
+            {
+                // Выполнение какой-либо операции
+                Thread.Sleep(1000);
+                await Task.Delay(1000, cancellationToken);
+
+                // Конкатенация событий
+                var concatenatedEvents = string.Join(",", events);
+
+                /// Любая дальнейшая обработка либо отправка конкатенированных событий
+
+                // Тестовое исключение
+                // throw new Exception("Тестовое исключение");        
+            }
+            catch
+            {    
+                // Пример обработки исключений (в случае обработки событий по отдельности, можнол удлить из в коллекции эвентов выполненные события, тогда незавершенные пойдут в retry)
+                events.Remove(events.FirstOrDefault());
+
+                // Любая кастомная логика (логирование и т. п.)
+                
+                // Вызываем любое исключение для отправки событий в retry
+                throw new Exception("Отправка для повторной попытки после исключения");
+                }
         };
 
-        Func<List<object>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
+        Func<List<string>, CancellationToken, Task> eventConsumerRetryExhausted = async (events, cancellationToken) =>
         {
             Console.WriteLine("Something went wrong...");
         };
 
-        var dtmOptions = new DeferredTaskManagerOptions<string>
-        {
-            TaskFactory = taskDelegate,
-            PoolSize = 1,
-            CollectionType = CollectionType.Queue,
-            SendDelayOptions = new SendDelayOptions()
-            {
-                MillisecondsSendDelay = 60000,
-                ConsiderDifference = true
-            },
-            RetryOptions = new RetryOptions<string>
-            {
-                RetryCount = 3,
-                MillisecondsRetryDelay = 10000,
-                TaskFactoryRetryExhausted = taskDelegateRetryExhausted
-            }
-        };
-
-        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
+        return _deferredTaskManager.StartAsync(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
     }
 }
 ```
