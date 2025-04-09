@@ -31,7 +31,7 @@ services.AddDeferredTaskManager<string>(options =>
     };
 });
 ```
-<details><summary>Модули и их переопределение</summary>
+<details><summary>#### Модули и их переопределение</summary>
   
 Решение состоит из 5 модулей, каждый из которых регистрируется в DI.
 
