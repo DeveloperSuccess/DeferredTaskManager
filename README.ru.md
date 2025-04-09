@@ -18,7 +18,7 @@
 services.AddDeferredTaskManager<string>(options =>
 {
     options.PoolSize = Environment.ProcessorCount;
-    options.CollectionType = CollectionType.Queue;
+    options.CollectionType = CollectionType.Bag;
     options.SendDelayOptions = new SendDelayOptions()
     {
         MillisecondsSendDelay = 60000,
