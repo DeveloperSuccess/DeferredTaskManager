@@ -112,7 +112,7 @@ namespace DTM
 
                 if (_options.RetryOptions.EventConsumerRetryExhausted != null)
                 {
-                    await _options.RetryOptions.EventConsumerRetryExhausted(events, ex, cancellationToken).ConfigureAwait(false);
+                    await _options.RetryOptions.EventConsumerRetryExhausted(events, ex, _options.RetryOptions.RetryCount - retryCount, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (retryCount == 0) return;

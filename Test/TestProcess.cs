@@ -35,7 +35,7 @@ namespace Test
         }
 
         private (Func<List<string>, CancellationToken, Task> EventConsumer,
-            Func<List<string>, Exception, CancellationToken, Task> EventConsumerRetryExhausted) GetConsumers()
+            Func<List<string>, Exception, int, CancellationToken, Task> EventConsumerRetryExhausted) GetConsumers()
         {
             Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
             {
@@ -46,14 +46,13 @@ namespace Test
                 var test = string.Join(",", events);
 
                 AddNumberCompletedEvents(events.Count);
-
-                // Тестовое исключение
-                throw new Exception("Тестовое исключение");
+                                
+                throw new Exception("Test Exception");
             };
 
-            Func<List<string>, Exception, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, cancellationToken) =>
+            Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"Retry Count: {retryCount}; {ex}");
             };
 
             return (eventConsumer, eventConsumerRetryExhausted);

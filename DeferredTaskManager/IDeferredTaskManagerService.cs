@@ -23,7 +23,7 @@ namespace DTM
         /// </summary>
         /// <paramref name="cancellationToken"/>
         Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, Exception, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
