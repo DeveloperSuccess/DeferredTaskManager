@@ -62,23 +62,27 @@ internal sealed class EventManagerService : BackgroundService
             // Конкатенация событий
             var concatenatedEvents = string.Join(",", events);
 
+            //throw new Exception("Тестовое исключение");
+
             // Любая дальнейшая обработка/отправка конкатенированных событий
             Thread.Sleep(1000);
-            await Task.Delay(1000, cancellationToken);
+            await Task.Delay(1000, cancellationToken);        
         };
-
-        Func<List<string>, CancellationToken, Task> eventConsumerRetryExhausted = async (events, cancellationToken) =>
+        
+        // Делегат, куда попадаем в случае возникновения исключений в основном делегате eventConsumer
+        Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
         {
-            Console.WriteLine("Что-то пошло не так...");
+            Console.WriteLine($"Повтор по счету: {retryCount}; {ex}");
         };
 
         return _deferredTaskManager.StartAsync(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
     }
 }
 ```
-#### ⚪ ```EventConsumer``` — основной делегат для кастомной логики
+#### ⚪ `EventConsumer` — основной делегат для кастомной логики
 
 Вся кастомная логика размещается в делегате `EventConsumer`, в который приходит коллекция консолидированных событий. Именно здесь можно осуществить необходимые операции над ними перед дальнейшей передачей/обработкой. Также в делегате можно обработать исключения (это актуально, если события обрабатываются по отдельности), отправив необработанные события на следующий заход после указанной в параметрах временной задержки `MillisecondsRetryDelay`. В приведенном примере в делегате выполняется конкатенация поступаемых событий от запущенных раннеров.
+В него можно добавить собственную логику обработки исключений, что может быть полезно, если эвенты обрабатываются отдельно: успешно завершенные эвенты можно удалить из основной коллекции эвентов, тогда незавершенные события пойдут в retry.
 ```
 try
 {
@@ -92,13 +96,14 @@ catch (Exception ex)
     // Любая кастомная логика (логирование и т. п.)
 
     // В случае обработки событий по отдельности,
-    // можно удалить из коллекции эвентов выполненные события и выбросить любое исключение,
-    // тогда незавершенные собития пойдут в retry
-    events.RemoveRange(successEvents);
-    throw new Exception("Выброс исключения для отправки на повторное выполнение
-        через заданный временной интервал в опциях DeferredTaskManager");    
+    // можно удалить из коллекции эвентов успешно завршенные события,
+    // тогда незавершенные события пойдут в retry
+    events.RemoveRange(successEvents);   
 }
 ```
+
+#### ⚪ `EventConsumerRetryExhausted` — делагат для обработки исключений
+По желанию можно указать этот делегат, попадание в который происходит в случае возникновения исключений в основном делегате `EventConsumer`. В нём можно осуществить логирование либо какие-либо другие кастомные операции.
 
 ### 3️⃣ Получение внедренной зависимости и осуществление добавления события(й)
 
