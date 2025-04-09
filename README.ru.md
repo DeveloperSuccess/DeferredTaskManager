@@ -70,15 +70,13 @@ internal sealed class EventManagerService : BackgroundService
                 events.Remove(events.FirstOrDefault());
 
                 // Любая кастомная логика (логирование и т. п.)
-                
-                // Вызываем любое исключение для отправки событий в retry
-                throw new Exception("Отправка для повторной попытки после исключения");
-                }
+            }
         };
 
         Func<List<string>, CancellationToken, Task> eventConsumerRetryExhausted = async (events, cancellationToken) =>
         {
-            Console.WriteLine("Something went wrong...");
+            /// В слу
+            Console.WriteLine("Что-то пошло не так...");
         };
 
         return _deferredTaskManager.StartAsync(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
