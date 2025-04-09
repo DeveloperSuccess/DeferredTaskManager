@@ -54,7 +54,8 @@ internal sealed class EventManagerService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-       // Делегат для кастомной логики, в который поступают события от запущенных раннеров. В качестве примера в нём производится конкатенирование событий,
+       // Делегат для кастомной логики, в который поступают события от запущенных раннеров.
+       // В качестве примера в нём производится конкатенирование событий,
        // но возмажна любая другая вариативная обработка или отправка куда-либо.
        Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
         {
