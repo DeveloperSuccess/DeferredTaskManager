@@ -12,8 +12,8 @@
 
 ## Пример использования
 
-### 1️⃣ Внедрение Singleton зависимости с требуемым типом данных:
-В качестве примера `DeferredTaskManager` регистрируется в `DI` с типом `string`.
+### 1️⃣ Внедрение Singleton зависимости с требуемым типом данных
+В качестве примера `DeferredTaskManager` регистрируется в `DI` с типом `string`:
 ```
 services.AddDeferredTaskManager<string>(options =>
 {
@@ -40,8 +40,8 @@ services.AddDeferredTaskManager<string>(options =>
 #### ⚪ `RetryOptions` — настройка обработки исключений
 Вы также можете указать параметры для повторных попыток обработки событий в случае возникновения исключений.
 
-### 2️⃣ Создание фоновой службы:
-В качестве примера приведено создание фоновой службы для `DeferredTaskManager<string>`.
+### 2️⃣ Создание фоновой службы
+В качестве примера приведено создание фоновой службы для `DeferredTaskManager<string>`:
 ```
 internal sealed class EventManagerService : BackgroundService
 {
@@ -109,7 +109,7 @@ catch (Exception ex)
 }
 ```
 
-### 3️⃣ Получение внедренной зависимости и осуществление добавления события(й):
+### 3️⃣ Получение внедренной зависимости и осуществление добавления события(й)
 
 ```
 _deferredTaskManager.Add(events);
