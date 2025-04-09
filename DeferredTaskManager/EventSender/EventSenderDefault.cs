@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    
+
     internal class EventSenderDefault<T> : IEventSender<T>
     {
         private readonly IPoolPubSub _pubSub;
@@ -43,7 +43,7 @@ namespace DTM
         {
             _pubSub.SendEvents();
         }
-                
+
         private async Task StartSendDelay(CancellationToken cancellationToken)
         {
             if (_options.SendDelayOptions == null) return;

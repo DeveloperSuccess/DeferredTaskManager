@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace DTM
 {
-    
+
     internal class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
@@ -26,13 +26,13 @@ namespace DTM
             };
         }
 
-        
+
         public int Count => _collectionStrategy.Count;
 
-        
+
         public bool IsEmpty => _collectionStrategy.IsEmpty;
 
-        
+
         public virtual void Add(T @event, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -41,7 +41,7 @@ namespace DTM
             });
         }
 
-        
+
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -51,7 +51,7 @@ namespace DTM
             });
         }
 
-        
+
         public virtual List<T> GetEventsAndClearStorage()
         {
             List<T> items;

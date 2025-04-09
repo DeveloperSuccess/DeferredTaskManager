@@ -2,13 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace DTM
 {
-    
+
     internal class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly object _startLock = new object();
@@ -28,34 +27,34 @@ namespace DTM
         }
 
         #region Implemented methods IEventStorage
-        
+
         public int Count => _eventStorage.Count;
-        
+
         public bool IsEmpty => _eventStorage.IsEmpty;
-        
+
         public virtual void Add(T @event, bool sendEvents = true) => Add(() => _eventStorage.Add(@event), sendEvents);
-        
+
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
-        
+
         public virtual List<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
         #endregion
 
         #region Implemented methods IPubSub
-        
+
         public int FreePoolCount => _pubSub.SubscribersCount;
-        
+
         public virtual void SendEvents() => _pubSub.SendEvents();
-        
+
         public int EmployedPoolCount => _options.PoolSize - _pubSub.SubscribersCount;
         #endregion
 
-        
+
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
 
-        
+
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, cancellationToken: cancellationToken);
