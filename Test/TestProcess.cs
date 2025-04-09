@@ -1,7 +1,6 @@
 ﻿using DTM;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using EventConsumer = System.Func<System.Collections.Generic.List<string>, System.Threading.CancellationToken, System.Threading.Tasks.Task>;
 
 namespace Test
 {
@@ -35,35 +34,26 @@ namespace Test
             Console.WriteLine($"Total execution time: {stopwatch.ElapsedMilliseconds} ms, events completed {_numberCompletedEvents.Sum()}");
         }
 
-        private (EventConsumer EventConsumer, EventConsumer EventConsumerRetryExhausted) GetConsumers()
+        private (Func<List<string>, CancellationToken, Task> EventConsumer,
+            Func<List<string>, Exception, CancellationToken, Task> EventConsumerRetryExhausted) GetConsumers()
         {
-            EventConsumer eventConsumer = async (events, cancellationToken) =>
+            Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
             {
-                try
-                {
-                    Thread.Sleep(1000);
+                Thread.Sleep(1000);
 
-                    await Task.Delay(1000, cancellationToken);
+                await Task.Delay(1000, cancellationToken);
 
-                    var test = string.Join(",", events);
+                var test = string.Join(",", events);
 
-                    AddNumberCompletedEvents(events.Count);
+                AddNumberCompletedEvents(events.Count);
 
-                    // Тестовое исключение
-                    // throw new Exception("Тестовое исключение");        
-                }
-                catch
-                {
-                    // Пример обработки исключений (в случае ошибки можно оставить в коллекции выполненные а остальные пойдут в retry)
-                    events.Remove(events.FirstOrDefault());
-
-                    throw new Exception("Sending to retry after exclusion");
-                }
+                // Тестовое исключение
+                throw new Exception("Тестовое исключение");
             };
 
-            EventConsumer eventConsumerRetryExhausted = async (events, cancellationToken) =>
+            Func<List<string>, Exception, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, cancellationToken) =>
             {
-                Console.WriteLine("Something went wrong...");
+                Console.WriteLine(ex);
             };
 
             return (eventConsumer, eventConsumerRetryExhausted);

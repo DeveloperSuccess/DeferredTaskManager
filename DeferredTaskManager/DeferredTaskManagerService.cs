@@ -50,7 +50,7 @@ namespace DTM
 
 
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            Func<List<T>, Exception, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
 
@@ -60,7 +60,7 @@ namespace DTM
             Initializing(eventConsumer, cancellationToken: cancellationToken);
 
         private Task Initializing(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            Func<List<T>, Exception, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default)
         {
             EnsureNotStarted();
@@ -91,7 +91,7 @@ namespace DTM
         }
 
         private void InitializingFields(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, CancellationToken, Task>? eventConsumerRetryExhausted = null)
+            Func<List<T>, Exception, CancellationToken, Task>? eventConsumerRetryExhausted = null)
         {
             _options.EventConsumer = eventConsumer;
             _options.RetryOptions.EventConsumerRetryExhausted = eventConsumerRetryExhausted;

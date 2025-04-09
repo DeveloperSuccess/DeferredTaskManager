@@ -106,19 +106,16 @@ namespace DTM
             {
                 await _options.EventConsumer(events, cancellationToken).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                if (retryCount == 0)
-                {
-                    if (_options.RetryOptions.EventConsumerRetryExhausted != null)
-                    {
-                        await _options.RetryOptions.EventConsumerRetryExhausted(events, cancellationToken).ConfigureAwait(false);
-                    }
+                await Task.Delay(_options.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
 
-                    return;
+                if (_options.RetryOptions.EventConsumerRetryExhausted != null)
+                {
+                    await _options.RetryOptions.EventConsumerRetryExhausted(events, ex, cancellationToken).ConfigureAwait(false);
                 }
 
-                await Task.Delay(_options.RetryOptions.MillisecondsRetryDelay, cancellationToken).ConfigureAwait(false);
+                if (retryCount == 0) return;
 
                 await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
             }
