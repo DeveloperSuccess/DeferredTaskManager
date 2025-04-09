@@ -62,7 +62,7 @@ internal sealed class EventManagerService : BackgroundService
             // Конкатенация событий
             var concatenatedEvents = string.Join(",", events);
 
-            /// Любая дальнейшая обработка/отправка конкатенированных событий
+            // Любая дальнейшая обработка/отправка конкатенированных событий
             Thread.Sleep(1000);
             await Task.Delay(1000, cancellationToken);
         };
@@ -82,7 +82,7 @@ internal sealed class EventManagerService : BackgroundService
 ```
 try
 {
-    /// Кастомная логика
+    // Кастомная логика
 
     // Тестовое исключение
     throw new Exception("Тестовое исключение");     
