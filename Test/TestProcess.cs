@@ -25,7 +25,7 @@ namespace Test
 
             var consumers = GetConsumers();
 
-            Task.Run(() => _manager.StartAsync(consumers.EventConsumer, consumers.EventConsumerRetryExhausted), default);
+            _manager.StartAsync(consumers.EventConsumer, consumers.EventConsumerRetryExhausted);
 
             await AddAsync();
             CountingTotalExecutionTime();
