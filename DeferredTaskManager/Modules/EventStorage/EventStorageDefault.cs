@@ -1,5 +1,4 @@
-﻿using DTM.CollectionStrategy;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,25 +12,17 @@ namespace DTM
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
         private readonly DeferredTaskManagerOptions<T> _options;
 
-        private readonly ICollectionStrategy<T> _collectionStrategy;
+        private readonly IStorageStrategy<T> _collectionStrategy;
 
-        public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options)
+        public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options, IStorageStrategy<T> collectionStrategy)
         {
             _options = options.Value;
-            _collectionStrategy = _options.CollectionType switch
-            {
-                CollectionType.Bag => new BagStrategy<T>(),
-                CollectionType.Queue => new QueueStrategy<T>(),
-                _ => throw new ArgumentException("Unacceptable collection type"),
-            };
+            _collectionStrategy = collectionStrategy;
         }
-
 
         public int Count => _collectionStrategy.Count;
 
-
         public bool IsEmpty => _collectionStrategy.IsEmpty;
-
 
         public virtual void Add(T @event, bool sendEvents = true)
         {
@@ -41,7 +32,6 @@ namespace DTM
             });
         }
 
-
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -50,7 +40,6 @@ namespace DTM
                     _collectionStrategy.Add(ev);
             });
         }
-
 
         public virtual List<T> GetEventsAndClearStorage()
         {

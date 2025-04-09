@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace DTM.CollectionStrategy
+namespace DTM
 {
     /// <summary>
     /// Select collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
     /// </summary>
     /// <typeparamref name="T"/>
-    public interface ICollectionStrategy<T>
+    public interface IStorageStrategy<T>
     {
         /// <summary>
         /// Add Value in storage

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DTM.CollectionStrategy
+namespace DTM
 {
-    internal class QueueStrategy<T> : ICollectionStrategy<T>
+    internal class QueueStrategy<T> : IStorageStrategy<T>
     {
         private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
         public void Add(T item) => _queue.Enqueue(item);

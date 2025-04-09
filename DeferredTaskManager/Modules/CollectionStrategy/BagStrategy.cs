@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DTM.CollectionStrategy
+namespace DTM
 {
-    internal class BagStrategy<T> : ICollectionStrategy<T>
+    internal class BagStrategy<T> : IStorageStrategy<T>
     {
         private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         public void Add(T item) => _bag.Add(item);
