@@ -59,7 +59,7 @@ The following public interfaces are used for internal interaction:
   
 All these interfaces are public, but, in fact, only the `IDeferredTaskManagerService` is used for external interaction. The implementation of each module can be redefined by adding its own dependencies and logic (which is why they also have public interfaces). 
 
-Modules can be reimplemented by sending them to the DI`services registration method.AddDeferredTaskManager` of custom types. The type being redefined must be inherited from one of the above public interfaces.
+You can redefine modules by sending custom types to the DI `services.AddDeferredTaskManager` registration method. The type being redefined must be inherited from one of the above public interfaces.
 
 ### 2️⃣ Creating a Background Service
 An example is the creation of a background service for `DeferredTaskManager<string>`:
