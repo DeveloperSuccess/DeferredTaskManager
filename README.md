@@ -45,7 +45,7 @@ You can also specify parameters for repeated attempts to process events in case 
   
 The solution consists of 5 modules, each of which registers in DI.
 
-  ⚪ 'IDeferredTaskManagerService' is the public interface of the main module, which implements the main public methods for working with the deferred task manager.
+  ⚪ `IDeferredTaskManagerService` is the public interface of the main module, which implements the main public methods for working with the deferred task manager.
   
 The following public interfaces are used for internal interaction: 
 
