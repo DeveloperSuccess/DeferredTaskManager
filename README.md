@@ -34,11 +34,11 @@ services.AddDeferredTaskManager<string>(options =>
 ```
 #### ⚪ `PoolSize` — pool size (number of available runners)
 The pool size is variable and is selected by the developer for a specific range of tasks, focusing on the speed of execution and the amount of resources consumed.
-#### ⚪ `CollectionType` — тип коллекции
+#### ⚪ `CollectionType` — collection type
 You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects. It is advisable to use «Queue» only if `poolSize = 1`, otherwise the execution order is not guaranteed.
-#### ⚪ `SendDelayOptions` — настройка отправки событий через временной интервал
+#### ⚪ `SendDelayOptions` — setting up sending events at a time interval
 Настраивает отправку добавленных событий на обработку через определенный промежуток времени с возможностью переменного вычета времени предыдущей операции. Имеет смысл указывать, когда при добавлении событий используется флаг `sendEvents = false`, который добавляет события без отправки на обработку.
-#### ⚪ `RetryOptions` — настройка обработки исключений
+#### ⚪ `RetryOptions` — configuring exception handling
 You can also specify parameters for repeated attempts to process events in case of exceptions.
 
 ### Modules and their redefinition
