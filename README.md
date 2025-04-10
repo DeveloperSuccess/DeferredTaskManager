@@ -13,13 +13,55 @@ The solution allows data consolidation in the current instance with the possibil
 
 ## Usage example
 
-### 1️⃣ Injection of the Singleton dependency with the required data type:
+### 1️⃣ Injection of the Singleton dependency with the required data type
 
 ```
-services.AddSingleton<IDeferredTaskManagerService<object>, DeferredTaskManagerService<object>>();
+services.AddDeferredTaskManager<string>(options =>
+{
+    options.PoolSize = Environment.ProcessorCount;
+    options.CollectionType = CollectionType.Bag;
+    options.SendDelayOptions = new SendDelayOptions()
+    {
+        MillisecondsSendDelay = 60000,
+        ConsiderDifference = true
+    };
+    options.RetryOptions = new RetryOptions<string>
+    {
+        RetryCount = 3,
+        MillisecondsRetryDelay = 10000,
+    };
+});
 ```
+#### ⚪ `PoolSize` — pool size (number of available runners)
+The pool size is variable and is selected by the developer for a specific range of tasks, focusing on the speed of execution and the amount of resources consumed.
+#### ⚪ `CollectionType` — тип коллекции
+You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects. It is advisable to use «Queue» only if `poolSize = 1`, otherwise the execution order is not guaranteed.
+#### ⚪ `SendDelayOptions` — настройка отправки событий через временной интервал
+Настраивает отправку добавленных событий на обработку через определенный промежуток времени с возможностью переменного вычета времени предыдущей операции. Имеет смысл указывать, когда при добавлении событий используется флаг `sendEvents = false`, который добавляет события без отправки на обработку.
+#### ⚪ `RetryOptions` — настройка обработки исключений
+You can also specify parameters for repeated attempts to process events in case of exceptions.
 
-### 2️⃣ Creating a Background Service with the necessary parameters:
+### Modules and their redefinition
+  
+The solution consists of 5 modules, each of which registers in DI.
+
+  ⚪ 'IDeferredTaskManagerService' is the public interface of the main module, which implements the main public methods for working with the deferred task manager.
+  
+The following public interfaces are used for internal interaction: 
+
+  ⚪ `IEventSender' — responsible for creating runners and contains the logic of their behavior.
+  
+  ⚪ `IEventStorage` is a layer for interacting with the event repository.
+  
+  ⚪ `IStorageStrategy` — used to implement event storage.
+
+  ⚪ `IPoolPubSub' — performs lending with a pool of background runners.
+  
+All these interfaces are public, but, in fact, only the `IDeferredTaskManagerService` is used for external interaction. The implementation of each module can be redefined by adding its own dependencies and logic (which is why they also have public interfaces). 
+
+Modules can be reimplemented by sending them to the DI`services registration method.AddDeferredTaskManager` of custom types. The type being redefined must be inherited from one of the above public interfaces.
+
+### 2️⃣ Creating a Background Service
 
 ```
 internal sealed class EventManagerService : BackgroundService
