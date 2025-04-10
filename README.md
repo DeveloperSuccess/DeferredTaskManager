@@ -101,7 +101,7 @@ internal sealed class EventManagerService : BackgroundService
 }
 ```
 
-#### ⚪ `EventConsumer' is the main delegate for custom logic
+#### ⚪ `EventConsumer` is the main delegate for custom logic
 
 All custom logic is placed in the `EventConsumer` delegate, which receives a collection of consolidated events. This is where you can perform the necessary operations on them before further transmission/processing. You can also handle exceptions in the delegate (this is important if events are handled separately) by sending unprocessed events to the next session after the `MillisecondsRetryDelay` time delay specified in the parameters. In the example above, the delegate concatenates incoming events from running runners.
 
