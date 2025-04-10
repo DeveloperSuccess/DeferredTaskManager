@@ -62,48 +62,41 @@ All these interfaces are public, but, in fact, only the `IDeferredTaskManagerSer
 Modules can be reimplemented by sending them to the DI`services registration method.AddDeferredTaskManager` of custom types. The type being redefined must be inherited from one of the above public interfaces.
 
 ### 2️⃣ Creating a Background Service
-
+An example is the creation of a background service for `DeferredTaskManager<string>`:
 ```
 internal sealed class EventManagerService : BackgroundService
 {
-    private readonly IDeferredTaskManagerService<object> _deferredTaskManager;
+    private readonly IDeferredTaskManagerService<string> _deferredTaskManager;
 
-    public EventManagerService(IDeferredTaskManagerService<object> deferredTaskManager)
+    public EventManagerService(IDeferredTaskManagerService<string> deferredTaskManager)
     {
-        _deferredTaskManager = deferredTaskManager ?? throw new ArgumentNullException(nameof(deferredTaskManager));
+        _deferredTaskManager = deferredTaskManager;
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Func<List<object>, CancellationToken, Task> taskDelegate = (events, cancellationToken) =>
+       // A delegate for custom logic that receives events from running runners.
+       // As an example, events are concatenated in it,
+       // but any other variable processing or sending is possible.
+       Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
         {
-            return Task.Delay(1000000, cancellationToken);
+            // Concatenation of events
+            var concatenatedEvents = string.Join(",", events);
+
+            //throw new Exception("Test exception");
+
+            // Any further processing/sending of concatenated events
+            Thread.Sleep(1000);
+            await Task.Delay(1000, cancellationToken);        
+        };
+        
+        // The delegate where we get to in case of exceptions in the main eventConsumer delegate
+        Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
+        {
+            Console.WriteLine($"Повтор по счету: {retryCount}; {ex}");
         };
 
-        Func<List<object>, CancellationToken, Task> taskDelegateRetryExhausted = async (events, cancellationToken) =>
-        {
-            Console.WriteLine("Something went wrong...");
-        };
-
-        var dtmOptions = new DeferredTaskManagerOptions<string>
-        {
-            TaskFactory = taskDelegate,
-            PoolSize = 1,
-            CollectionType = CollectionType.Queue,
-            SendDelayOptions = new SendDelayOptions()
-            {
-                MillisecondsSendDelay = 60000,
-                ConsiderDifference = true
-            },
-            RetryOptions = new RetryOptions<string>
-            {
-                RetryCount = 3,
-                MillisecondsRetryDelay = 10000,
-                TaskFactoryRetryExhausted = taskDelegateRetryExhausted
-            }
-        };
-
-        return Task.Run(() => _deferredTaskManager.StartAsync(dtmOptions, cancellationToken), cancellationToken);
+        return _deferredTaskManager.StartAsync(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
     }
 }
 ```
