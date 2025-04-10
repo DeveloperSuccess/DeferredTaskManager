@@ -67,11 +67,7 @@ namespace DTM
                     });
                     break;
                 case ServiceLifetime.Transient:
-                    services.AddTransient(typeof(TServiceType), serviceProvider =>
-                    {
-                        return CreateServiceInstance<TServiceType, TDefaultType>(serviceProvider, customType);
-                    });
-                    break;
+                    throw new NotSupportedException($"{nameof(ServiceLifetime.Transient)} Not Supported");
             }
         }
 
