@@ -49,13 +49,13 @@ The solution consists of 5 modules, each of which registers in DI.
   
 The following public interfaces are used for internal interaction: 
 
-  ⚪ `IEventSender' — responsible for creating runners and contains the logic of their behavior.
+  ⚪ `IEventSender` — responsible for creating runners and contains the logic of their behavior.
   
   ⚪ `IEventStorage` is a layer for interacting with the event repository.
   
   ⚪ `IStorageStrategy` — used to implement event storage.
 
-  ⚪ `IPoolPubSub' — performs lending with a pool of background runners.
+  ⚪ `IPoolPubSub` — performs lending with a pool of background runners.
   
 All these interfaces are public, but, in fact, only the `IDeferredTaskManagerService` is used for external interaction. The implementation of each module can be redefined by adding its own dependencies and logic (which is why they also have public interfaces). 
 
