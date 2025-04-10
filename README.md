@@ -101,33 +101,33 @@ internal sealed class EventManagerService : BackgroundService
 }
 ```
 
-#### ⚪ ```TaskFactory``` — delegate for custom logic
+#### ⚪ `EventConsumer' is the main delegate for custom logic
 
-All custom logic is placed in the delegate `TaskFactory`, which receives a collection of consolidated events. This is where you can perform the necessary operations on them before further transmission/processing. You can also handle exceptions in the delegate (this is important if events are handled separately) by sending unprocessed events to the next session after the time delay specified in the parameters `MillisecondsRetryDelay`.
+All custom logic is placed in the `EventConsumer` delegate, which receives a collection of consolidated events. This is where you can perform the necessary operations on them before further transmission/processing. You can also handle exceptions in the delegate (this is important if events are handled separately) by sending unprocessed events to the next session after the `MillisecondsRetryDelay` time delay specified in the parameters. In the example above, the delegate concatenates incoming events from running runners.
+
+You can add your own exception handling logic to it, which can be useful if events are processed separately: successfully completed events can be deleted from the main event collection, then incomplete events will go to retry.
 ```
 try
 {
     // Custom operation on received events
+
+    // Test exception
+    throw new Exception("Test exception");     
 }
 catch (Exception ex)
 {
-    events.RemoveRange(successEvents);
+    // Any custom logic (logging, etc.)
 
-    // You can issue an exception after deleting successfully 
-    // completed events or add your own conditions
-    throw new Exception("Sending a second attempt after Exception");
+    // In case of event handling separately,
+    // you can delete successfully completed events from the event collection,
+    // then the unfinished events will go to retry
+    events.RemoveRange(successEvents);   
 }
 ```
-#### ⚪ ```PoolSize``` — pool size (number of available runners)
-The pool size is variable and is selected by the developer for a specific range of tasks, focusing on the speed of execution and the amount of resources consumed.
-#### ⚪ ```CollectionType``` — collection type
-You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects. It is advisable to use «Queue» only if `poolSize = 1`, otherwise the execution order is not guaranteed.
-#### ⚪ ```SendDelayOptions``` — setting up sending events at a time interval
-Configures the sending of added events for processing after a certain period of time with the possibility of variable deduction of the time of the previous operation. It makes sense to specify when the `AddWithoutSend` method is used to add event, which adds events without sending for processing.
-#### ⚪ ```RetryOptions``` — configuring exception handling
-You can also pass an error handling delegate that will trigger when the specified number of retries is exhausted. 
+#### ⚪ `EventConsumerRetryExhausted` — delegate for exception handling
+Optionally, you can specify this delegate, which gets into in case of exceptions in the main delegate `EventConsumer'. Logging and other custom operations can be performed in it.
 
-### 3️⃣ Sending data to the Deferred Task Manager for subsequent execution:
+### 3️⃣ Getting an embedded dependency and implementing the addition of event(s)
 
 ```
 _deferredTaskManager.Add(events);
