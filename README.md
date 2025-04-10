@@ -35,9 +35,9 @@ services.AddDeferredTaskManager<string>(options =>
 #### ⚪ `PoolSize` — pool size (number of available runners)
 The pool size is variable and is selected by the developer for a specific range of tasks, focusing on the speed of execution and the amount of resources consumed.
 #### ⚪ `CollectionType` — collection type
-You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects. It is advisable to use «Queue» only if `poolSize = 1`, otherwise the execution order is not guaranteed.
+You can also specify the collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects. It is advisable to use «Queue» only if `PoolSize = 1`, otherwise the execution order is not guaranteed.
 #### ⚪ `SendDelayOptions` — setting up sending events at a time interval
-Настраивает отправку добавленных событий на обработку через определенный промежуток времени с возможностью переменного вычета времени предыдущей операции. Имеет смысл указывать, когда при добавлении событий используется флаг `sendEvents = false`, который добавляет события без отправки на обработку.
+Configures the sending of added events for processing after a certain period of time with the possibility of variable deduction of the time of the previous operation. It makes sense to specify when the `send Events = false` flag is used when adding events, which adds events without sending them for processing.
 #### ⚪ `RetryOptions` — configuring exception handling
 You can also specify parameters for repeated attempts to process events in case of exceptions.
 
@@ -93,7 +93,7 @@ internal sealed class EventManagerService : BackgroundService
         // The delegate where we get to in case of exceptions in the main eventConsumer delegate
         Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
         {
-            Console.WriteLine($"Повтор по счету: {retryCount}; {ex}");
+            Console.WriteLine($"Repeat number: {retryCount}; {ex}");
         };
 
         return _deferredTaskManager.StartAsync(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
