@@ -125,7 +125,7 @@ catch (Exception ex)
 }
 ```
 #### ⚪ `EventConsumerRetryExhausted` — delegate for exception handling
-Optionally, you can specify this delegate, which gets into in case of exceptions in the main delegate `EventConsumer'. Logging and other custom operations can be performed in it.
+Optionally, you can specify this delegate, which gets into in case of exceptions in the main delegate `EventConsumer`. Logging and other custom operations can be performed in it.
 
 ### 3️⃣ Getting an embedded dependency and implementing the addition of event(s)
 
