@@ -14,6 +14,7 @@ The solution allows data consolidation in the current instance with the possibil
 ## Usage example
 
 ### 1️⃣ Injection of the Singleton dependency with the required data type
+As an example, `DeferredTaskManager` is registered in DI with the `string` type:
 
 ```
 services.AddDeferredTaskManager<string>(options =>
