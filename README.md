@@ -11,6 +11,20 @@ The implementation allows you to use multiple background tasks (or "runners") fo
 
 The solution allows data consolidation in the current instance with the possibility of variable deduplication or any other operations at the discretion of the developer, which can reduce resources during further transmission and processing, as well as increase performance.
 
+<p align="center">
+<img align="center"  src="https://github.com/user-attachments/assets/ea3386f1-ce13-4542-b343-d24da7f25853" width=60%>
+</p>
+
+It was applied in my work on scaling WebSockets within the framework of a microservice architecture, where consolidation and deduplication of events before they were sent directly had an important impact on performance and resource consumption by reducing overhead costs.
+
+<p align="center">
+<img align="center"  src="https://github.com/user-attachments/assets/313c28ea-c689-40ee-a447-d0d1b4b5a480" width=60%>
+</p>
+
+The initial task of developing the solution was to exclude from the execution time of the main operation (request) the time for sending some events to third-party microservices. With the introduction of `DeferredTaskManager`, this task has been solved. In addition, the `max(n)` requests from each client instance were significantly reduced due to data consolidation and deduplication on their side. For example, instead of 1000 individual requests, only one will be sent, which reduces overhead costs in all areas and increases the overall system performance.
+
+If the delivery process is multi-stage, and the server is also a client in the future (for example, it plays the role of a hub), using `DeferredTaskManager` in it is also advisable.
+
 ## Usage example
 
 ### 1️⃣ Injection of the Singleton dependency with the required data type
