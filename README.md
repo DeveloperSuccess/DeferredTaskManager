@@ -18,7 +18,7 @@ The solution allows data consolidation in the current instance with the possibil
 It was applied in my work on scaling WebSockets within the framework of a microservice architecture, where consolidation and deduplication of events before they were sent directly had an important impact on performance and resource consumption by reducing overhead costs.
 
 <p align="center">
-<img align="center"  src="https://github.com/user-attachments/assets/313c28ea-c689-40ee-a447-d0d1b4b5a480" width=60%>
+<img align="center"  src="https://github.com/user-attachments/assets/a525f458-a9ce-400f-84ca-9f405d08f72a" width=60%>
 </p>
 
 The initial task of developing the solution was to exclude from the execution time of the main operation (request) the time for sending some events to third-party microservices. With the introduction of `DeferredTaskManager`, this task has been solved. In addition, the `max(n)` requests from each client instance were significantly reduced due to data consolidation and deduplication on their side. For example, instead of 1000 individual requests, only one will be sent, which reduces overhead costs in all areas and increases the overall system performance.
