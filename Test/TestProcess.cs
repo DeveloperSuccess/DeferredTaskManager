@@ -22,9 +22,7 @@ namespace Test
 
             stopwatch.Start();
 
-            var consumers = GetConsumers();
-
-            _manager.StartAsync(consumers.EventConsumer, consumers.EventConsumerRetryExhausted);
+            _manager.StartAsync(EventConsumer, EventConsumerRetryExhausted);
 
             await AddAsync();
             CountingTotalExecutionTime();
@@ -34,27 +32,22 @@ namespace Test
             Console.WriteLine($"Total execution time: {stopwatch.ElapsedMilliseconds} ms, events completed {_numberCompletedEvents.Sum()}");
         }
 
-        private (Func<List<string>, CancellationToken, Task> EventConsumer,
-            Func<List<string>, Exception, int, CancellationToken, Task> EventConsumerRetryExhausted) GetConsumers()
+        private async Task EventConsumer(List<string> events, CancellationToken cancellationToken)
         {
-            Func<List<string>, CancellationToken, Task> eventConsumer = async (events, cancellationToken) =>
-            {
-                Thread.Sleep(1000);
-                await Task.Delay(1000, cancellationToken);
+            Thread.Sleep(1000);
+            await Task.Delay(1000, cancellationToken);
 
-                //throw new Exception("Test Exception");
+            //throw new Exception("Test Exception");
 
-                var test = string.Join(",", events);
+            var test = string.Join(",", events);
 
-                AddNumberCompletedEvents(events.Count);     
-            };
+            AddNumberCompletedEvents(events.Count);
+        }
 
-            Func<List<string>, Exception, int, CancellationToken, Task> eventConsumerRetryExhausted = async (events, ex, retryCount, cancellationToken) =>
-            {
-                Console.WriteLine($"Retry Count: {retryCount}; {ex}");
-            };
 
-            return (eventConsumer, eventConsumerRetryExhausted);
+        private async Task EventConsumerRetryExhausted(List<string> events, Exception ex, int retryCount, CancellationToken cancellationToken)
+        {
+            Console.WriteLine($"Retry Count: {retryCount}; {ex}");
         }
 
         async Task AddAsync()
