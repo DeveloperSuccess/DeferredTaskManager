@@ -11,7 +11,7 @@ namespace DTM
     /// which makes this approach more reactive but less resource-intensive.
     /// </summary>
     /// <typeparamref name="T"></typeparamref>
-    public interface IDeferredTaskManagerService<T> : IEventStorage<T>
+    public interface IDeferredTaskManagerService<T> : IEventStorage<T>, IEventSenderInfo<T>
     {
         /// <summary>
         /// Sending available events to the delegate for on-demand processing

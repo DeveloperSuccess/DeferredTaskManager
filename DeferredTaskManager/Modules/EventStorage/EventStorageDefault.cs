@@ -11,8 +11,10 @@ namespace DTM
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
         private readonly DeferredTaskManagerOptions<T> _options;
-
         private readonly IStorageStrategy<T> _collectionStrategy;
+
+        public DateTimeOffset LastAddedAt { get; private set; } = DateTimeOffset.MinValue;
+
 
         public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options, IStorageStrategy<T> collectionStrategy)
         {
@@ -63,6 +65,8 @@ namespace DTM
 
         private void ExecuteWithReadLock(Action action)
         {
+            LastAddedAt = DateTimeOffset.UtcNow;
+
             _collectionLock.EnterReadLock();
 
             try

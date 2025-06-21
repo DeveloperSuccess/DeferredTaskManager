@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace DTM
 {
@@ -8,14 +6,8 @@ namespace DTM
     /// Interface for interacting with the sender module
     /// </summary>
     /// <typeparamref name="T"/>
-    public interface IEventSender<T> : IEventSenderInfo<T>
+    public interface IEventSenderInfo<T>
     {
-        /// <summary>
-        /// The task of running background tasks
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        abstract Task StartBackgroundTasks(CancellationToken cancellationToken);
-
         /// <summary>
         /// Date and time since the runners were created before they were expected
         /// </summary>

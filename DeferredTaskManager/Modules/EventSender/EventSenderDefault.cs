@@ -15,6 +15,10 @@ namespace DTM
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
+        public DateTimeOffset CreationAt { get; private set; } = DateTimeOffset.MinValue;
+        public DateTimeOffset LastSendAt { get; private set; } = DateTimeOffset.MinValue;
+
+
         public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
         {
             _options = options.Value;
@@ -35,6 +39,8 @@ namespace DTM
             {
                 tasks.Add(StartSendDelay(cancellationToken));
             }
+
+            CreationAt = DateTimeOffset.UtcNow;
 
             return Task.WhenAll(tasks);
         }
@@ -102,6 +108,8 @@ namespace DTM
 
         private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)
         {
+            LastSendAt = DateTimeOffset.UtcNow;
+
             try
             {
                 await _options.EventConsumer(events, cancellationToken).ConfigureAwait(false);

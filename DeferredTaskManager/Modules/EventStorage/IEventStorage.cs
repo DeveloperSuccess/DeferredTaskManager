@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DTM
 {
@@ -39,5 +40,10 @@ namespace DTM
         /// Returns a value indicating whether the event storage is empty
         /// </summary>
         bool IsEmpty { get; }
+
+        /// <summary>
+        /// Date and time of the last call to the method to add the value
+        /// </summary>
+        DateTimeOffset LastAddedAt { get; }
     }
 }

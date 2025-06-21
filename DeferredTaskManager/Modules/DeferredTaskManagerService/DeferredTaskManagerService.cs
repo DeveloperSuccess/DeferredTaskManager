@@ -37,6 +37,8 @@ namespace DTM
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
 
         public virtual List<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
+        public DateTimeOffset LastAddedAt => _eventStorage.LastAddedAt;
+
         #endregion
 
         #region Implemented methods IPubSub
@@ -46,8 +48,14 @@ namespace DTM
         public virtual void SendEvents() => _pubSub.SendEvents();
 
         public int EmployedPoolCount => _options.PoolSize - _pubSub.SubscribersCount;
+
         #endregion
 
+        #region Implemented methods IEventSender
+        public DateTimeOffset CreationAt => _eventSender.CreationAt;
+        public DateTimeOffset LastSendAt => _eventSender.LastSendAt;
+
+        #endregion
 
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
