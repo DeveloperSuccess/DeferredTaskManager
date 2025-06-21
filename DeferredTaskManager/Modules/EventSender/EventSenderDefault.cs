@@ -15,7 +15,7 @@ namespace DTM
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
-        public DateTimeOffset CreationAt { get; private set; } = DateTimeOffset.MinValue;
+        public DateTimeOffset StartAt { get; private set; } = DateTimeOffset.MinValue;
         public DateTimeOffset LastSendAt { get; private set; } = DateTimeOffset.MinValue;
 
 
@@ -40,7 +40,7 @@ namespace DTM
                 tasks.Add(StartSendDelay(cancellationToken));
             }
 
-            CreationAt = DateTimeOffset.UtcNow;
+            StartAt = DateTimeOffset.UtcNow;
 
             return Task.WhenAll(tasks);
         }

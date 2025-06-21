@@ -26,6 +26,8 @@ namespace DTM
             _pubSub = pubSub;
         }
 
+        public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
+
         #region Implemented methods IEventStorage
 
         public int Count => _eventStorage.Count;
@@ -52,10 +54,23 @@ namespace DTM
         #endregion
 
         #region Implemented methods IEventSender
-        public DateTimeOffset CreationAt => _eventSender.CreationAt;
+        public DateTimeOffset StartAt => _eventSender.StartAt;
         public DateTimeOffset LastSendAt => _eventSender.LastSendAt;
 
         #endregion
+
+        public bool IsInactive(TimeSpan inactivityThreshold)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            var recentActivity =
+                now - LastSendAt <= inactivityThreshold ||
+                now - LastAddedAt <= inactivityThreshold ||
+                now - CreatedAt <= inactivityThreshold ||
+                now - StartAt <= inactivityThreshold;
+
+            return !recentActivity;
+        }
 
         public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,

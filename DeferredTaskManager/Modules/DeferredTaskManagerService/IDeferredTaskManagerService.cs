@@ -42,5 +42,10 @@ namespace DTM
         /// Number of employed runners in the pool
         /// </summary>
         int EmployedPoolCount { get; }
+
+        /// <summary>
+        /// DTM instance creation time
+        /// </summary>
+        DateTimeOffset CreatedAt { get; }
     }
 }

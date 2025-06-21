@@ -15,15 +15,5 @@ namespace DTM
         /// </summary>
         /// <param name="cancellationToken"></param>
         abstract Task StartBackgroundTasks(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Date and time since the runners were created before they were expected
-        /// </summary>
-        DateTimeOffset CreationAt { get; }
-
-        /// <summary>
-        /// Date and time of the last access to the method before sending data to the user delegate
-        /// </summary>
-        DateTimeOffset LastSendAt { get; }
     }
 }
