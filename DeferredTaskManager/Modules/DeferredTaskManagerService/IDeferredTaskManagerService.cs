@@ -47,5 +47,12 @@ namespace DTM
         /// DTM instance creation time
         /// </summary>
         DateTimeOffset CreatedAt { get; }
+
+        /// <summary>
+        /// Check if there was activity in the instance within the specified time threshold
+        /// </summary>
+        /// <param name="inactivityThreshold">Inactivity threshold</param>
+        /// <returns></returns>
+        bool IsInactive(TimeSpan inactivityThreshold);
     }
 }

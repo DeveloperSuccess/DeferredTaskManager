@@ -59,6 +59,17 @@ namespace DTM
 
         #endregion
 
+
+        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+            CancellationToken cancellationToken = default) =>
+            Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
+
+
+        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            CancellationToken cancellationToken = default) =>
+            Initializing(eventConsumer, cancellationToken: cancellationToken);
+
         public bool IsInactive(TimeSpan inactivityThreshold)
         {
             var now = DateTimeOffset.UtcNow;
@@ -71,16 +82,6 @@ namespace DTM
 
             return !recentActivity;
         }
-
-        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
-            CancellationToken cancellationToken = default) =>
-            Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
-
-
-        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
-            CancellationToken cancellationToken = default) =>
-            Initializing(eventConsumer, cancellationToken: cancellationToken);
 
         private Task Initializing(Func<List<T>, CancellationToken, Task> eventConsumer,
             Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
