@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<BaseVersion>14.1.0</BaseVersion>
+	<BaseVersion>14.2.0</BaseVersion>
 	<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	<RepositoryUrl>https://github.com/DeveloperSuccess/DeferredTaskManager</RepositoryUrl>
 	<Authors>Arthur Bogdanov</Authors>
