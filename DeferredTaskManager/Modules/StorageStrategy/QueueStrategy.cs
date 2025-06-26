@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DTM
 {
-    internal class QueueStrategy<T> : IStorageStrategy<T>
+    public class QueueStrategy<T> : IStorageStrategy<T>
     {
         private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
         public void Add(T item) => _queue.Enqueue(item);

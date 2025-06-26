@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DTM
 {
-    internal class BagStrategy<T> : IStorageStrategy<T>
+    public class BagStrategy<T> : IStorageStrategy<T>
     {
         private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         public void Add(T item) => _bag.Add(item);

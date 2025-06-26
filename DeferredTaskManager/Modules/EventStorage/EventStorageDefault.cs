@@ -7,7 +7,7 @@ using System.Threading;
 namespace DTM
 {
 
-    internal class EventStorageDefault<T> : IEventStorage<T>
+    public class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
         private readonly DeferredTaskManagerOptions<T> _options;

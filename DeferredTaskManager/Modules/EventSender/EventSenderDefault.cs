@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DTM
 {
 
-    internal class EventSenderDefault<T> : IEventSender<T>
+    public class EventSenderDefault<T> : IEventSender<T>
     {
         private readonly IPoolPubSub _pubSub;
         private readonly DeferredTaskManagerOptions<T> _options;

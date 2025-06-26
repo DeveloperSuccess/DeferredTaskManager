@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-    internal class PoolPubSub : IPoolPubSub
+    public class PoolPubSub : IPoolPubSub
     {
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<bool>> _subscribers = new ConcurrentDictionary<Guid, TaskCompletionSource<bool>>();
         private readonly object _lockSubscribers = new object();

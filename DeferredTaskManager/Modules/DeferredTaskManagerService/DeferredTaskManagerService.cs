@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DTM
 {
 
-    internal class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
+    public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly object _startLock = new object();
         private readonly IPoolPubSub _pubSub;
