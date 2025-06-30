@@ -54,5 +54,6 @@ namespace DTM
         /// <param name="inactivityThreshold">Inactivity threshold</param>
         /// <returns></returns>
         bool IsInactive(TimeSpan inactivityThreshold);
+        bool IsStarted { get; }
     }
 }

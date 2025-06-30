@@ -16,7 +16,6 @@ namespace DTM
         private readonly IEventSender<T> _eventSender;
 
         private readonly DeferredTaskManagerOptions<T> _options;
-        private bool _isStarted = false;
 
         public DeferredTaskManagerService(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub pubSub)
         {
@@ -26,6 +25,7 @@ namespace DTM
             _pubSub = pubSub;
         }
 
+        public bool IsStarted { get; private set; } = false;
         public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
         #region Implemented methods IEventStorage
@@ -100,8 +100,8 @@ namespace DTM
         {
             lock (_startLock)
             {
-                if (_isStarted) throw new Exception($"{nameof(DeferredTaskManagerService<T>)} has already been launched.");
-                _isStarted = true;
+                if (IsStarted) throw new Exception($"{nameof(DeferredTaskManagerService<T>)} has already been launched.");
+                IsStarted = true;
             }
         }
 
