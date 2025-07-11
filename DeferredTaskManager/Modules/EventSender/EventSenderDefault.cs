@@ -8,17 +8,19 @@ using System.Threading.Tasks;
 
 namespace DTM
 {
-
+    /// <inheritdoc/>
     public class EventSenderDefault<T> : IEventSender<T>
     {
         private readonly IPoolPubSub _pubSub;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
+        /// <inheritdoc/>
         public DateTimeOffset StartAt { get; private set; } = DateTimeOffset.MinValue;
+        /// <inheritdoc/>
         public DateTimeOffset LastSendAt { get; private set; } = DateTimeOffset.MinValue;
 
-
+        /// <inheritdoc/>
         public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
         {
             _options = options.Value;
@@ -26,6 +28,7 @@ namespace DTM
             _pubSub = pubSub;
         }
 
+        /// <inheritdoc/>
         public Task StartBackgroundTasks(CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();
@@ -45,6 +48,7 @@ namespace DTM
             return Task.WhenAll(tasks);
         }
 
+        /// <inheritdoc/>
         public void SendEvents()
         {
             _pubSub.SendEvents();

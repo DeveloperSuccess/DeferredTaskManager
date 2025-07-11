@@ -54,6 +54,10 @@ namespace DTM
         /// <param name="inactivityThreshold">Inactivity threshold</param>
         /// <returns></returns>
         bool IsInactive(TimeSpan inactivityThreshold);
+
+        /// <summary>
+        /// The instance already had the Start method called
+        /// </summary>
         bool IsStarted { get; }
     }
 }

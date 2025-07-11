@@ -6,26 +6,30 @@ using System.Threading;
 
 namespace DTM
 {
-
+    /// <inheritdoc/>
     public class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly ReaderWriterLockSlim _collectionLock = new ReaderWriterLockSlim();
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IStorageStrategy<T> _collectionStrategy;
 
+        /// <inheritdoc/>
         public DateTimeOffset LastAddedAt { get; private set; } = DateTimeOffset.MinValue;
 
-
+        /// <inheritdoc/>
         public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options, IStorageStrategy<T> collectionStrategy)
         {
             _options = options.Value;
             _collectionStrategy = collectionStrategy;
         }
 
+        /// <inheritdoc/>
         public int Count => _collectionStrategy.Count;
 
+        /// <inheritdoc/>
         public bool IsEmpty => _collectionStrategy.IsEmpty;
 
+        /// <inheritdoc/>
         public virtual void Add(T @event, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -34,6 +38,7 @@ namespace DTM
             });
         }
 
+        /// <inheritdoc/>
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true)
         {
             ExecuteWithReadLock(() =>
@@ -43,6 +48,7 @@ namespace DTM
             });
         }
 
+        /// <inheritdoc/>
         public virtual List<T> GetEventsAndClearStorage()
         {
             List<T> items;
