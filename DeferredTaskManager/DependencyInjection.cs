@@ -13,7 +13,7 @@ namespace DTM
         /// <summary>
         /// Dependency Injection for DeferredTaskManager
         /// </summary>
-        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="T"></typeparam>
         /// <param name="services">IServiceCollection</param>
         /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
         /// <param name="lifetime">Service Lifetime</param>
@@ -22,8 +22,8 @@ namespace DTM
         /// <param name="eventStorageType">Overriding the EventStorage module</param>
         /// <param name="eventSenderType">Overriding the EventSender module</param>
         /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
-        public static IServiceCollection AddDeferredTaskManager<TValue>(this IServiceCollection services,
-            Action<DeferredTaskManagerOptions<TValue>> configureOptions,
+        public static IServiceCollection AddDeferredTaskManager<T>(this IServiceCollection services,
+            Action<DeferredTaskManagerOptions<T>> configureOptions,
             ServiceLifetime lifetime = ServiceLifetime.Singleton,
             Type? pubSubType = null,
             Type? storageStrategyType = null,
@@ -36,60 +36,20 @@ namespace DTM
 
             services.Configure(configureOptions);
 
-            AddDependencyInjection<IPoolPubSub, PoolPubSub>(services, pubSubType, lifetime);
+            AddDependencyInjection<T, IPoolPubSub, PoolPubSub>(services, pubSubType, lifetime);
 
-            AddDependencyInjectionStorageStrategy<TValue>(services, storageStrategyType, lifetime, configureOptions);
+            AddDependencyInjectionStorageStrategy<T>(services, storageStrategyType, lifetime, configureOptions);
 
-            AddDependencyInjection<IEventStorage<TValue>, EventStorageDefault<TValue>>(services, eventStorageType, lifetime);
+            AddDependencyInjection<T, IEventStorage<T>, EventStorageDefault<T>>(services, eventStorageType, lifetime);
 
-            AddDependencyInjection<IEventSender<TValue>, EventSenderDefault<TValue>>(services, eventSenderType, lifetime);
+            AddDependencyInjection<T, IEventSender<T>, EventSenderDefault<T>>(services, eventSenderType, lifetime);
 
-            AddDependencyInjection<IDeferredTaskManagerService<TValue>, DeferredTaskManagerService<TValue>>(services, deferredTaskManagerServiceType, lifetime);
-
-            return services;
-        }
-
-        /// <summary>
-        /// Dependency Injection for DeferredTaskManager
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <typeparam name="Interface"></typeparam>
-        /// <param name="services">IServiceCollection</param>
-        /// <param name="configureOptions">Parameters for DeferredTaskManager</param>
-        /// <param name="lifetime">Service Lifetime</param>
-        /// <param name="pubSubType">Overriding the PubSub module</param>
-        /// <param name="storageStrategyType">Overriding the CollectionStrategy module</param>
-        /// <param name="eventStorageType">Overriding the EventStorage module</param>
-        /// <param name="eventSenderType">Overriding the EventSender module</param>
-        /// <param name="deferredTaskManagerServiceType">Overriding the DeferredTaskManagerService module</param>
-        public static IServiceCollection AddDeferredTaskManager<Interface, TValue>(this IServiceCollection services,
-            Action<DeferredTaskManagerOptions<TValue>> configureOptions,
-            ServiceLifetime lifetime = ServiceLifetime.Singleton,
-            Type? pubSubType = null,
-            Type? storageStrategyType = null,
-            Type? eventStorageType = null,
-            Type? eventSenderType = null,
-            Type? deferredTaskManagerServiceType = null) where Interface : IDeferredTaskManagerService<TValue>
-        {
-            if (services == null) throw new ArgumentNullException(nameof(services));
-            if (configureOptions == null) throw new ArgumentNullException(nameof(configureOptions));
-
-            services.Configure(configureOptions);
-
-            AddDependencyInjection<IPoolPubSub, PoolPubSub>(services, pubSubType, lifetime);
-
-            AddDependencyInjectionStorageStrategy<TValue>(services, storageStrategyType, lifetime, configureOptions);
-
-            AddDependencyInjection<IEventStorage<TValue>, EventStorageDefault<TValue>>(services, eventStorageType, lifetime);
-
-            AddDependencyInjection<IEventSender<TValue>, EventSenderDefault<TValue>>(services, eventSenderType, lifetime);
-
-            AddDependencyInjection<Interface, DeferredTaskManagerService<TValue>>(services, deferredTaskManagerServiceType, lifetime);
+            AddDependencyInjection<T, IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, deferredTaskManagerServiceType, lifetime);
 
             return services;
         }
 
-        static void AddDependencyInjection<TServiceType, TDefaultType>(IServiceCollection services,
+        static void AddDependencyInjection<T, TServiceType, TDefaultType>(IServiceCollection services,
             Type? customType, ServiceLifetime lifetime)
         {
             switch (lifetime)
@@ -111,26 +71,26 @@ namespace DTM
             }
         }
 
-        static void AddDependencyInjectionStorageStrategy<TValue>(IServiceCollection services,
-            Type? customType, ServiceLifetime lifetime, Action<DeferredTaskManagerOptions<TValue>> configureOptions)
+        static void AddDependencyInjectionStorageStrategy<T>(IServiceCollection services,
+            Type? customType, ServiceLifetime lifetime, Action<DeferredTaskManagerOptions<T>> configureOptions)
         {
             if (customType != null)
             {
-                AddDependencyInjection<IStorageStrategy<TValue>, EventStorageDefault<TValue>>(services, customType, lifetime);
+                AddDependencyInjection<T, IStorageStrategy<T>, EventStorageDefault<T>>(services, customType, lifetime);
             }
             else
             {
-                var options = new DeferredTaskManagerOptions<TValue>();
+                var options = new DeferredTaskManagerOptions<T>();
 
                 configureOptions(options);
 
                 if (options.CollectionType == CollectionType.Bag)
                 {
-                    AddDependencyInjection<IStorageStrategy<TValue>, BagStrategy<TValue>>(services, null, lifetime);
+                    AddDependencyInjection<T, IStorageStrategy<T>, BagStrategy<T>>(services, null, lifetime);
                 }
                 else
                 {
-                    AddDependencyInjection<IStorageStrategy<TValue>, QueueStrategy<TValue>>(services, null, lifetime);
+                    AddDependencyInjection<T, IStorageStrategy<T>, QueueStrategy<T>>(services, null, lifetime);
                 }
             }
         }
