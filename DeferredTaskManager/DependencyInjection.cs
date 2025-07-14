@@ -36,20 +36,20 @@ namespace DTM
 
             services.Configure(configureOptions);
 
-            AddDependencyInjection<T, IPoolPubSub, PoolPubSub>(services, pubSubType, lifetime);
+            AddDependencyInjection<IPoolPubSub<T>, PoolPubSub<T>>(services, pubSubType, lifetime);
 
             AddDependencyInjectionStorageStrategy<T>(services, storageStrategyType, lifetime, configureOptions);
 
-            AddDependencyInjection<T, IEventStorage<T>, EventStorageDefault<T>>(services, eventStorageType, lifetime);
+            AddDependencyInjection<IEventStorage<T>, EventStorageDefault<T>>(services, eventStorageType, lifetime);
 
-            AddDependencyInjection<T, IEventSender<T>, EventSenderDefault<T>>(services, eventSenderType, lifetime);
+            AddDependencyInjection<IEventSender<T>, EventSenderDefault<T>>(services, eventSenderType, lifetime);
 
-            AddDependencyInjection<T, IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, deferredTaskManagerServiceType, lifetime);
+            AddDependencyInjection<IDeferredTaskManagerService<T>, DeferredTaskManagerService<T>>(services, deferredTaskManagerServiceType, lifetime);
 
             return services;
         }
 
-        static void AddDependencyInjection<T, TServiceType, TDefaultType>(IServiceCollection services,
+        static void AddDependencyInjection<TServiceType, TDefaultType>(IServiceCollection services,
             Type? customType, ServiceLifetime lifetime)
         {
             switch (lifetime)
@@ -76,7 +76,7 @@ namespace DTM
         {
             if (customType != null)
             {
-                AddDependencyInjection<T, IStorageStrategy<T>, EventStorageDefault<T>>(services, customType, lifetime);
+                AddDependencyInjection<IStorageStrategy<T>, EventStorageDefault<T>>(services, customType, lifetime);
             }
             else
             {
@@ -86,11 +86,11 @@ namespace DTM
 
                 if (options.CollectionType == CollectionType.Bag)
                 {
-                    AddDependencyInjection<T, IStorageStrategy<T>, BagStrategy<T>>(services, null, lifetime);
+                    AddDependencyInjection<IStorageStrategy<T>, BagStrategy<T>>(services, null, lifetime);
                 }
                 else
                 {
-                    AddDependencyInjection<T, IStorageStrategy<T>, QueueStrategy<T>>(services, null, lifetime);
+                    AddDependencyInjection<IStorageStrategy<T>, QueueStrategy<T>>(services, null, lifetime);
                 }
             }
         }

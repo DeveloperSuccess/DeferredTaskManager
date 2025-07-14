@@ -11,7 +11,7 @@ namespace DTM
     /// <inheritdoc/>
     public class EventSenderDefault<T> : IEventSender<T>
     {
-        private readonly IPoolPubSub _pubSub;
+        private readonly IPoolPubSub<T> _pubSub;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
@@ -21,7 +21,7 @@ namespace DTM
         public DateTimeOffset LastSendAt { get; private set; } = DateTimeOffset.MinValue;
 
         /// <inheritdoc/>
-        public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub pubSub)
+        public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub<T> pubSub)
         {
             _options = options.Value;
             _eventStorage = eventStorage;

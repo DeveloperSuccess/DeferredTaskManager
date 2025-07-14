@@ -11,14 +11,14 @@ namespace DTM
     public class DeferredTaskManagerService<T> : IDeferredTaskManagerService<T>
     {
         private readonly object _startLock = new object();
-        private readonly IPoolPubSub _pubSub;
+        private readonly IPoolPubSub<T> _pubSub;
         private readonly IEventStorage<T> _eventStorage;
         private readonly IEventSender<T> _eventSender;
 
         private readonly DeferredTaskManagerOptions<T> _options;
         
         /// <inheritdoc/>
-        public DeferredTaskManagerService(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub pubSub)
+        public DeferredTaskManagerService(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub<T> pubSub)
         {
             _options = options.Value;
             _eventStorage = eventStorage;
