@@ -22,11 +22,30 @@ namespace DTM.Extensions
 
         internal async static Task WaitAsync(this Task task, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            using (new Timer(s => ((TaskCompletionSource<bool>)s).TrySetException(new TimeoutException()), tcs, timeout, Timeout.InfiniteTimeSpan))
-            using (cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).TrySetCanceled(), tcs))
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            var delayTask = Task.Delay(timeout, cts.Token);
+
+            var completedTask = await Task.WhenAny(task, delayTask).ConfigureAwait(false);
+
+            if (completedTask == task)
             {
-                await (await Task.WhenAny(task, tcs.Task).ConfigureAwait(false)).ConfigureAwait(false);
+                cts.Cancel();
+
+                return;
+            }
+            else
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(cancellationToken);
+                }
+                else
+                {
+                    cts.Cancel();
+
+                    throw new TimeoutException();
+                }
             }
         }
 
@@ -41,11 +60,30 @@ namespace DTM.Extensions
 
         internal static async Task<TResult> WaitAsync<TResult>(this Task<TResult> task, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<TResult>();
-            using (new Timer(s => ((TaskCompletionSource<TResult>)s).TrySetException(new TimeoutException()), tcs, timeout, Timeout.InfiniteTimeSpan))
-            using (cancellationToken.Register(s => ((TaskCompletionSource<TResult>)s).TrySetCanceled(), tcs))
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            var delayTask = Task.Delay(timeout, cts.Token);
+
+            var completedTask = await Task.WhenAny(task, delayTask).ConfigureAwait(false);
+
+            if (completedTask == task)
             {
-                return await (await Task.WhenAny(task, tcs.Task).ConfigureAwait(false)).ConfigureAwait(false);
+                cts.Cancel();
+
+                return await task.ConfigureAwait(false);
+            }
+            else
+            {     
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(cancellationToken);
+                }
+                else
+                {
+                    cts.Cancel();
+
+                    throw new TimeoutException();
+                }
             }
         }
         #endregion
