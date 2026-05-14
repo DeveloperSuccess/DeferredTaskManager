@@ -18,7 +18,7 @@ namespace DTM
         /// <inheritdoc/>
         public void SendEvents()
         {
-            var task = new TaskCompletionSource<bool>();
+            var task = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             lock (_lockSubscribers)
             {
@@ -40,7 +40,7 @@ namespace DTM
         {
             subscriberKey = Guid.NewGuid();
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _subscribers.AddOrUpdate(subscriberKey, taskCompletionSource);
 
