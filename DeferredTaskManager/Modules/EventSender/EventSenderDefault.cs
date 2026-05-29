@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -101,18 +101,24 @@ namespace DTM
 
         private async Task ProcessAndSendEventsAsync(CancellationToken token)
         {
+            var events = _eventStorage.GetEventsAndClearStorage();
+
+            if (events.Count == 0) return;
             try
             {
-                var events = _eventStorage.GetEventsAndClearStorage();
-                if (events.Count > 0)
-                {
-                    await SendEventsAsync(events, _options.RetryOptions.RetryCount, token).ConfigureAwait(false);
-                }
+                await SendEventsAsync(events, _options.RetryOptions.RetryCount, token).ConfigureAwait(false);
             }
-            catch { }
+            catch
+            {
+            }
+            finally
+            {
+                ArrayPool<T>.Shared.Return(events.Array, clearArray: true);
+            }
+
         }
 
-        private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)
+        private async Task SendEventsAsync(ArraySegment<T> events, int retryCount, CancellationToken cancellationToken)
         {
             LastSendAt = DateTimeOffset.UtcNow;
 

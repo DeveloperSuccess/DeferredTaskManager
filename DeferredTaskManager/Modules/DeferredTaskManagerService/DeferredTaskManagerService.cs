@@ -41,7 +41,7 @@ namespace DTM
         /// <inheritdoc/>
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
         /// <inheritdoc/>
-        public virtual List<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
+        public virtual ArraySegment<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
         /// <inheritdoc/>
         public DateTimeOffset LastAddedAt => _eventStorage.LastAddedAt;
 
@@ -66,13 +66,13 @@ namespace DTM
         #endregion
 
         /// <inheritdoc/>
-        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+        public virtual Task StartAsync(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
+            Func<ArraySegment<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, eventConsumerRetryExhausted, cancellationToken);
 
         /// <inheritdoc/>
-        public virtual Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+        public virtual Task StartAsync(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
             CancellationToken cancellationToken = default) =>
             Initializing(eventConsumer, cancellationToken: cancellationToken);
 
@@ -90,8 +90,8 @@ namespace DTM
             return !recentActivity;
         }
 
-        private Task Initializing(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+        private Task Initializing(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
+            Func<ArraySegment<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default)
         {
             EnsureNotStarted();
@@ -121,8 +121,8 @@ namespace DTM
             Validator.ValidateObject(options, context, true);
         }
 
-        private void InitializingFields(Func<List<T>, CancellationToken, Task> eventConsumer,
-            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null)
+        private void InitializingFields(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
+            Func<ArraySegment<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null)
         {
             _options.EventConsumer = eventConsumer;
             _options.RetryOptions.EventConsumerRetryExhausted = eventConsumerRetryExhausted;

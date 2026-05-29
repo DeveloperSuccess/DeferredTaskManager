@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DTM
 {
@@ -16,7 +17,7 @@ namespace DTM
         /// <summary>
         /// Get items from storage
         /// </summary>
-        List<T> ExtractAll();
+        ArraySegment<T> ExtractAll();
         /// <summary>
         /// Count items from storage
         /// </summary>
