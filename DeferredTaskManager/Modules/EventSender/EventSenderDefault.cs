@@ -63,7 +63,7 @@ namespace DTM
                 if (!_options.SendDelayOptions.ConsiderDifference)
                 {
                     SendEvents();
-                    await Task.Delay((_options.SendDelayOptions.MillisecondsSendDelay), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(_options.SendDelayOptions.MillisecondsSendDelay, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 

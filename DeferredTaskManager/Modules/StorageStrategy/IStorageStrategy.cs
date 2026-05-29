@@ -16,7 +16,7 @@ namespace DTM
         /// <summary>
         /// Get items from storage
         /// </summary>
-        IEnumerable<T> GetItems();
+        List<T> ExtractAll();
         /// <summary>
         /// Count items from storage
         /// </summary>
@@ -25,9 +25,5 @@ namespace DTM
         /// Checks if the storage is empty
         /// </summary>
         bool IsEmpty { get; }
-        /// <summary>
-        /// Clears the storage
-        /// </summary>
-        void Clear();
     }
 }

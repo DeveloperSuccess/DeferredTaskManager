@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace DTM
 {
@@ -7,16 +9,24 @@ namespace DTM
     public class BagStrategy<T> : IStorageStrategy<T>
     {
         /// <inheritdoc/>
-        private readonly ConcurrentBag<T> _bag = new ConcurrentBag<T>();
+        public ConcurrentBag<T> _bag = new ConcurrentBag<T>();
         /// <inheritdoc/>
         public void Add(T item) => _bag.Add(item);
-        /// <inheritdoc/>
-        public IEnumerable<T> GetItems() => _bag;
         /// <inheritdoc/>
         public int Count => _bag.Count;
         /// <inheritdoc/>
         public bool IsEmpty => _bag.IsEmpty;
         /// <inheritdoc/>
-        public void Clear() => _bag.Clear();
+        public List<T> ExtractAll()
+        {
+            var newBag = new ConcurrentBag<T>();
+
+            // Атомарно меняем ссылку
+            var oldBag = Interlocked.Exchange(ref _bag, newBag);
+
+            // Вызываем .ToList() на старом баге. 
+            // Это безопасно, так как никто больше не может в него писать.
+            return oldBag.ToList();
+        }
     }
 }
