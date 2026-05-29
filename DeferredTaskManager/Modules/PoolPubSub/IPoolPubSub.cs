@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace DTM
@@ -19,13 +19,7 @@ namespace DTM
         /// <summary>
         /// Adding a runner available for work
         /// </summary>
-        /// <param name="subscriberKey"></param>
-        /// <param name="task"></param>
-        void Subscribe(out Guid subscriberKey, out Task<bool> task);
-        /// <summary>
-        /// Deleting a runner
-        /// </summary>
-        /// <param name="subscriberKey"></param>
-        void Unsubscribe(Guid subscriberKey);
+        /// <param name="cancellationToken">Cancellation Token</param>
+        Task<bool> WaitForSignalAsync(CancellationToken cancellationToken);
     }
 }

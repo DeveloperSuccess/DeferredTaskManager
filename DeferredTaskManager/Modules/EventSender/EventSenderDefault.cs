@@ -1,4 +1,4 @@
-﻿using DTM.Extensions;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -84,30 +84,32 @@ namespace DTM
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                _pubSub.Subscribe(out Guid subscriberKey, out Task<bool> task);
-
-                if (_eventStorage.IsEmpty)
+                try
                 {
-                    try
-                    {
-                        await task.WaitAsync(cancellationToken).ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        _pubSub.Unsubscribe(subscriberKey);
-                        continue;
-                    }
+                    await _pubSub.WaitForSignalAsync(cancellationToken);
                 }
-                else
+                catch
                 {
-                    _pubSub.Unsubscribe(subscriberKey);
+                    continue;
                 }
 
-                var events = _eventStorage.GetEventsAndClearStorage();
-                if (events.Count == 0) continue;
-
-                await SendEventsAsync(events, _options.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
+                await ProcessAndSendEventsAsync(cancellationToken);
             }
+
+            await ProcessAndSendEventsAsync(CancellationToken.None);
+        }
+
+        private async Task ProcessAndSendEventsAsync(CancellationToken token)
+        {
+            try
+            {
+                var events = _eventStorage.GetEventsAndClearStorage();
+                if (events.Count > 0)
+                {
+                    await SendEventsAsync(events, _options.RetryOptions.RetryCount, token).ConfigureAwait(false);
+                }
+            }
+            catch { }
         }
 
         private async Task SendEventsAsync(List<T> events, int retryCount, CancellationToken cancellationToken)

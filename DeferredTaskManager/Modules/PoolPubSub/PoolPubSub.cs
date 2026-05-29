@@ -1,7 +1,6 @@
-﻿using DTM.Extensions;
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
+﻿using System;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace DTM
@@ -9,51 +8,47 @@ namespace DTM
     /// <inheritdoc/>
     public class PoolPubSub<T> : IPoolPubSub<T>
     {
-        private readonly ConcurrentDictionary<Guid, TaskCompletionSource<bool>> _subscribers = new ConcurrentDictionary<Guid, TaskCompletionSource<bool>>();
-        private readonly object _lockSubscribers = new object();
+        private readonly Channel<bool> _channel = Channel.CreateUnbounded<bool>(new UnboundedChannelOptions
+        {
+            SingleReader = false,
+            SingleWriter = false
+        });
+
+        private int _subscribersCount;
 
         /// <inheritdoc/>
-        public int SubscribersCount => _subscribers.Count;
+        public int SubscribersCount => Volatile.Read(ref _subscribersCount);
 
         /// <inheritdoc/>
         public void SendEvents()
         {
-            var task = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _channel.Writer.TryWrite(true);
+        }
 
-            lock (_lockSubscribers)
+        /// <inheritdoc/>
+        public async Task<bool> WaitForSignalAsync(CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _subscribersCount);
+            try
             {
-                var subscriber = _subscribers.FirstOrDefault();
-
-                if (subscriber.Key != Guid.Empty)
+                if (await _channel.Reader.WaitToReadAsync(cancellationToken))
                 {
-                    Unsubscribe(subscriber.Key);
+                    if (_channel.Reader.TryRead(out _))
+                    {
+                        return true;
+                    }
                 }
-
-                task = subscriber.Value;
+                return false;
             }
-
-            task?.TrySetResult(true);
-        }
-
-        /// <inheritdoc/>
-        public void Subscribe(out Guid subscriberKey, out Task<bool> task)
-        {
-            subscriberKey = Guid.NewGuid();
-
-            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            _subscribers.AddOrUpdate(subscriberKey, taskCompletionSource);
-
-            task = taskCompletionSource.Task;
-        }
-
-        /// <inheritdoc/>
-        public void Unsubscribe(Guid subscriberKey)
-        {
-            lock (_lockSubscribers)
+            catch (OperationCanceledException)
             {
-                _subscribers.TryRemove(subscriberKey, out var subscriber);
+                return false;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _subscribersCount);
             }
         }
     }
+
 }

@@ -16,7 +16,7 @@ namespace DTM
         private readonly IEventSender<T> _eventSender;
 
         private readonly DeferredTaskManagerOptions<T> _options;
-        
+
         /// <inheritdoc/>
         public DeferredTaskManagerService(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IEventSender<T> eventSender, IPoolPubSub<T> pubSub)
         {
