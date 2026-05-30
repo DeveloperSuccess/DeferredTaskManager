@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Test;
 
-var testProcess = new TestProcess();
+var testProcess = new TestProcess(threadCount: 4, itemCount: 5_000_000);
 
 using (var scope = GetServiceProvider().CreateScope())
 {
@@ -18,7 +18,7 @@ ServiceProvider GetServiceProvider()
     var services = new ServiceCollection();
     services.AddDeferredTaskManager<string>(options =>
     {
-        options.PoolSize = Environment.ProcessorCount;
+        options.PoolSize = 4;
         options.SendDelayOptions = new SendDelayOptions()
         {
             MillisecondsSendDelay = 60000,

@@ -4,11 +4,8 @@ using System.Diagnostics;
 
 namespace Test
 {
-    internal class TestProcess
+    internal class TestProcess(int threadCount = 4, int itemCount = 5_000_000)
     {
-        const int _threadCount = 10;
-        const int _itemCount = 500000;
-
         private readonly ConcurrentBag<int> _numberCompletedEvents = [];
         private IDeferredTaskManagerService<string> _manager = default!;
 
@@ -62,7 +59,7 @@ namespace Test
 
             var tasks = new List<Task>();
 
-            for (int i = 0; i < _threadCount; i++)
+            for (int i = 0; i < threadCount; i++)
                 tasks.Add(Task.Run(() => Add()));
 
             await Task.WhenAll(tasks);
@@ -74,7 +71,7 @@ namespace Test
 
         void Add()
         {
-            for (int i = 0; i < _itemCount; i++)
+            for (int i = 0; i < itemCount; i++)
             {
                 _manager.Add(Guid.NewGuid().ToString() + " The implementation allows you to use multiple background tasks (or «runners») to process tasks from the queue.");
             }
@@ -87,7 +84,8 @@ namespace Test
 
         void CountingTotalExecutionTime()
         {
-            while (_numberCompletedEvents.Sum() < _threadCount * _itemCount) ;
+            var temp = threadCount * itemCount;
+            while (_numberCompletedEvents.Sum() < temp) ;
         }
     }
 }
