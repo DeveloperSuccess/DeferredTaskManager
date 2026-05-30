@@ -10,13 +10,13 @@ namespace DTM
     public class EventStorageDefault<T> : IEventStorage<T>
     {
         private readonly DeferredTaskManagerOptions<T> _options;
-        private readonly IStorageStrategy<T> _collectionStrategy;
+        private readonly IQueueStorage<T> _collectionStrategy;
 
         /// <inheritdoc/>
         public DateTimeOffset LastAddedAt { get; private set; } = DateTimeOffset.MinValue;
 
         /// <inheritdoc/>
-        public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options, IStorageStrategy<T> collectionStrategy)
+        public EventStorageDefault(IOptions<DeferredTaskManagerOptions<T>> options, IQueueStorage<T> collectionStrategy)
         {
             _options = options.Value;
             _collectionStrategy = collectionStrategy;

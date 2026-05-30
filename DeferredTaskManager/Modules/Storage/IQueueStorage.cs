@@ -6,7 +6,7 @@ namespace DTM
     /// Select collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
     /// </summary>
     /// <typeparamref name="T"/>
-    public interface IStorageStrategy<T>
+    public interface IQueueStorage<T>
     {
         /// <summary>
         /// Add Value in storage

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class QueueStrategy<T> : IStorageStrategy<T>
+    public class QueueStorage<T> : IQueueStorage<T>
     {
         /// <inheritdoc/>
         public ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();

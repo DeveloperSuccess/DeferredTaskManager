@@ -76,7 +76,7 @@ namespace DTM
         {
             if (customType != null)
             {
-                AddDependencyInjection<IStorageStrategy<T>, EventStorageDefault<T>>(services, customType, lifetime);
+                AddDependencyInjection<IQueueStorage<T>, EventStorageDefault<T>>(services, customType, lifetime);
             }
             else
             {
@@ -84,14 +84,7 @@ namespace DTM
 
                 configureOptions(options);
 
-                if (options.CollectionType == CollectionType.Bag)
-                {
-                    AddDependencyInjection<IStorageStrategy<T>, BagStrategy<T>>(services, null, lifetime);
-                }
-                else
-                {
-                    AddDependencyInjection<IStorageStrategy<T>, QueueStrategy<T>>(services, null, lifetime);
-                }
+                AddDependencyInjection<IQueueStorage<T>, QueueStorage<T>>(services, null, lifetime);
             }
         }
 

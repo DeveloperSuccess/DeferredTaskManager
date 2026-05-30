@@ -29,12 +29,6 @@ namespace DTM
         public int PoolSize { get; set; } = 1000;
 
         /// <summary>
-        /// Select collection type, «Bag» for the Unordered collection of objects (it works faster) or «Queue» for the Ordered collection of objects.
-        /// </summary>
-        [Required]
-        public CollectionType CollectionType { get; set; } = CollectionType.Bag;
-
-        /// <summary>
         /// Options up the processing of added events after a certain time interval with the 
         /// possibility of variable deducting the time of the previous operation
         /// </summary>
