@@ -32,7 +32,7 @@ namespace Test
             Console.WriteLine($"Total execution time: {stopwatch.ElapsedMilliseconds} ms, events completed {_numberCompletedEvents.Sum()}");
         }
 
-        private async Task EventConsumer(ArraySegment<string> events, CancellationToken cancellationToken)
+        private async Task EventConsumer(List<string> events, CancellationToken cancellationToken)
         {
             Thread.Sleep(1000);
             await Task.Delay(1000, cancellationToken);
@@ -45,7 +45,7 @@ namespace Test
         }
 
 
-        private async Task EventConsumerRetryExhausted(ArraySegment<string> events, Exception ex, int retryCount, CancellationToken cancellationToken)
+        private async Task EventConsumerRetryExhausted(List<string> events, Exception ex, int retryCount, CancellationToken cancellationToken)
         {
             Console.WriteLine($"Retry Count: {retryCount}; {ex}");
         }

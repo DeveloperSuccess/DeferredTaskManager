@@ -22,15 +22,15 @@ namespace DTM
         /// Launching Deferred Task Manager
         /// </summary>
         /// <paramref name="cancellationToken"/>
-        Task StartAsync(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
-            Func<ArraySegment<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
+        Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
+            Func<List<T>, Exception, int, CancellationToken, Task>? eventConsumerRetryExhausted = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Launching Deferred Task Manager
         /// </summary>
         /// <paramref name="cancellationToken"/>
-        Task StartAsync(Func<ArraySegment<T>, CancellationToken, Task> eventConsumer,
+        Task StartAsync(Func<List<T>, CancellationToken, Task> eventConsumer,
             CancellationToken cancellationToken = default);
 
         /// <summary>

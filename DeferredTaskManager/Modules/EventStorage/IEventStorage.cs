@@ -29,7 +29,7 @@ namespace DTM
         /// Retrieves collected events with further storage cleanup
         /// </summary>
         /// <returns>Collected events</returns>
-        ArraySegment<T> GetEventsAndClearStorage();
+        List<T> GetEventsAndClearStorage();
 
         /// <summary>
         /// Number of unprocessed events

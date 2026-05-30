@@ -46,7 +46,7 @@ namespace DTM
         }
 
         /// <inheritdoc/>
-        public virtual ArraySegment<T> GetEventsAndClearStorage()
+        public virtual List<T> GetEventsAndClearStorage()
         {
             return _collectionStrategy.ExtractAll();
         }

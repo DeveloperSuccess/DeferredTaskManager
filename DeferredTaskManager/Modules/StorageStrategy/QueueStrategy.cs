@@ -1,6 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,27 +17,20 @@ namespace DTM
         /// <inheritdoc/>
         public bool IsEmpty => _queue.IsEmpty;
         /// <inheritdoc/>                
-        public ArraySegment<T> ExtractAll()
+        public List<T> ExtractAll()
         {
             var newQueue = new ConcurrentQueue<T>();
+
             var oldQueue = Interlocked.Exchange(ref _queue, newQueue);
-
-            int count = oldQueue.Count;
-            if (count == 0)
-            {
-                return ArraySegment<T>.Empty;
-            }
-
-            var sharedArray = ArrayPool<T>.Shared.Rent(count);
-            int actualCount = 0;
+                
+            var list = new List<T>(oldQueue.Count);
 
             while (oldQueue.TryDequeue(out var item))
             {
-                sharedArray[actualCount] = item;
-                actualCount++;
+                list.Add(item);
             }
 
-            return new ArraySegment<T>(sharedArray, 0, actualCount);
+            return list;
         }
     }
 }
