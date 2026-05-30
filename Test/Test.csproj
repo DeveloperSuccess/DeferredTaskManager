@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeferredTaskManager\DeferredTaskManager.csproj" />
+    <ProjectReference Include="..\DTM\DTM.csproj" />
   </ItemGroup>
 
 </Project>
