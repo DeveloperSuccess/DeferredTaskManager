@@ -6,7 +6,7 @@ namespace DTM
     /// <summary>
     /// Interface for interacting with the pool of available background runners
     /// </summary>
-    public interface IPoolPubSub<T>
+    public interface IWakeUpChannel
     {
         /// <summary>
         /// Number of available runners in the pool

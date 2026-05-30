@@ -36,7 +36,7 @@ namespace DTM
 
             services.Configure(configureOptions);
 
-            AddDependencyInjection<IPoolPubSub<T>, PoolPubSub<T>>(services, pubSubType, lifetime);
+            AddDependencyInjection<IWakeUpChannel, WakeUpChannel>(services, pubSubType, lifetime);
 
             AddDependencyInjectionStorageStrategy<T>(services, storageStrategyType, lifetime, configureOptions);
 

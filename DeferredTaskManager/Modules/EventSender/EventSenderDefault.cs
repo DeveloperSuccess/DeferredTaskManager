@@ -11,7 +11,7 @@ namespace DTM
     /// <inheritdoc/>
     public class EventSenderDefault<T> : IEventSender<T>
     {
-        private readonly IPoolPubSub<T> _pubSub;
+        private readonly IWakeUpChannel _wakeUpChannel;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
 
@@ -21,11 +21,11 @@ namespace DTM
         public DateTimeOffset LastSendAt { get; private set; } = DateTimeOffset.MinValue;
 
         /// <inheritdoc/>
-        public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IPoolPubSub<T> pubSub)
+        public EventSenderDefault(IOptions<DeferredTaskManagerOptions<T>> options, IEventStorage<T> eventStorage, IWakeUpChannel wakeUpChannel)
         {
             _options = options.Value;
             _eventStorage = eventStorage;
-            _pubSub = pubSub;
+            _wakeUpChannel = wakeUpChannel;
         }
 
         /// <inheritdoc/>
@@ -51,7 +51,7 @@ namespace DTM
         /// <inheritdoc/>
         public void SendEvents()
         {
-            _pubSub.SendEvents();
+            _wakeUpChannel.SendEvents();
         }
 
         private async Task StartSendDelay(CancellationToken cancellationToken)
@@ -86,7 +86,7 @@ namespace DTM
             {
                 try
                 {
-                    await _pubSub.WaitForSignalAsync(cancellationToken);
+                    await _wakeUpChannel.WaitForSignalAsync(cancellationToken);
                 }
                 catch
                 {

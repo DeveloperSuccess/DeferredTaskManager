@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class PoolPubSub<T> : IPoolPubSub<T>
+    public class WakeUpChannel : IWakeUpChannel
     {
         private readonly Channel<bool> _channel = Channel.CreateUnbounded<bool>(new UnboundedChannelOptions
         {
