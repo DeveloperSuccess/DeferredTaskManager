@@ -1,7 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace DTM
 {
@@ -19,13 +17,9 @@ namespace DTM
         /// <inheritdoc/>                
         public List<T> ExtractAll()
         {
-            var newQueue = new ConcurrentQueue<T>();
+            var list = new List<T>();
 
-            var oldQueue = Interlocked.Exchange(ref _queue, newQueue);
-                
-            var list = new List<T>(oldQueue.Count);
-
-            while (oldQueue.TryDequeue(out var item))
+            while (_queue.TryDequeue(out var item))
             {
                 list.Add(item);
             }
