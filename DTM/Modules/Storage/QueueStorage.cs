@@ -7,7 +7,7 @@ namespace DTM
     public class QueueStorage<T> : IQueueStorage<T>
     {
         /// <inheritdoc/>
-        public ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
+        private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
         /// <inheritdoc/>
         public void Add(T item) => _queue.Enqueue(item);
         /// <inheritdoc/>
