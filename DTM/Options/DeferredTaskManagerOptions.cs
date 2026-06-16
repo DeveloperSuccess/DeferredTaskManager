@@ -39,5 +39,9 @@ namespace DTM
         /// </summary>
         [Required]
         public RetryOptions<T> RetryOptions { get; set; } = new RetryOptions<T>();
+        /// <summary>
+        /// Only one runner can read data from the storage
+        /// </summary>
+        public bool ExclusiveStorageReader { get; set; } = false;
     }
 }

@@ -14,6 +14,7 @@ namespace DTM
         private readonly IWakeUpChannel _wakeUpChannel;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
+        private readonly SemaphoreSlim _storageLock = new SemaphoreSlim(1, 1);
 
         /// <inheritdoc/>
         public DateTimeOffset StartAt { get; private set; } = DateTimeOffset.MinValue;
@@ -99,14 +100,32 @@ namespace DTM
             await ProcessAndSendEventsAsync(CancellationToken.None);
         }
 
-        private async Task ProcessAndSendEventsAsync(CancellationToken token)
+        private async Task ProcessAndSendEventsAsync(CancellationToken cancellationToken)
         {
+            List<T> events;
+
             try
             {
-                var events = _eventStorage.GetEventsAndClearStorage();
-                if (events.Count > 0)
+                if (_options.ExclusiveStorageReader)
                 {
-                    await SendEventsAsync(events, _options.RetryOptions.RetryCount, token).ConfigureAwait(false);
+                    await _storageLock.WaitAsync(cancellationToken);
+                }
+
+                try
+                {
+                    events = _eventStorage.GetEventsAndClearStorage();
+                }
+                finally
+                {
+                    if (_options.ExclusiveStorageReader)
+                    {
+                        _storageLock.Release();
+                    }
+                }
+
+                if (events?.Count > 0)
+                {
+                    await SendEventsAsync(events, _options.RetryOptions.RetryCount, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch { }
