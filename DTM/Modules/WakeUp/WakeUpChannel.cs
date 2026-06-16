@@ -31,7 +31,7 @@ namespace DTM
             Interlocked.Increment(ref _subscribersCount);
             try
             {
-                if (await _channel.Reader.WaitToReadAsync(cancellationToken))
+                if (await _channel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     if (_channel.Reader.TryRead(out _))
                     {
