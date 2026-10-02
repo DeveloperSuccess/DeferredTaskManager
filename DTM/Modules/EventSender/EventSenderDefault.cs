@@ -113,7 +113,7 @@ namespace DTM
 
                 try
                 {
-                    events = _eventStorage.GetEventsAndClearStorage();
+                    events = _eventStorage.ExtractEvents();
                 }
                 finally
                 {

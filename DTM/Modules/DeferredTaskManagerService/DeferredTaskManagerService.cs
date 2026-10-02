@@ -41,7 +41,7 @@ namespace DTM
         /// <inheritdoc/>
         public virtual void Add(IEnumerable<T> events, bool sendEvents = true) => Add(() => _eventStorage.Add(events), sendEvents);
         /// <inheritdoc/>
-        public virtual List<T> GetEventsAndClearStorage() => _eventStorage.GetEventsAndClearStorage();
+        public virtual List<T> ExtractEvents() => _eventStorage.ExtractEvents();
         /// <inheritdoc/>
         public DateTimeOffset LastAddedAt => _eventStorage.LastAddedAt;
 
