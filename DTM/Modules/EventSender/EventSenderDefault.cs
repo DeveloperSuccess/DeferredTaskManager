@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 namespace DTM
 {
     /// <inheritdoc/>
-    public class EventSenderDefault<T> : IEventSender<T>
+    public class EventSenderDefault<T> : IEventSender<T>, IDisposable
     {
+        private bool _disposed;
         private readonly IWakeUpChannel _wakeUpChannel;
         private readonly DeferredTaskManagerOptions<T> _options;
         private readonly IEventStorage<T> _eventStorage;
@@ -152,6 +153,26 @@ namespace DTM
 
                 await SendEventsAsync(events, retryCount - 1, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this); 
+        }
+
+        /// <inheritdoc/>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _storageLock.Dispose();
+            }
+
+            _disposed = true;
         }
     };
 }
